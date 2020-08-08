@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
 using Payments.Account.Data;
 
 namespace Payments.Account
@@ -53,16 +52,6 @@ namespace Payments.Account
                             .AllowAnyMethod();
                     });
             });
-
-            services.AddSwaggerGen(options =>
-            {
-                options.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Title = "Chabloom Payments Account",
-                    Description = "Chabloom Payments Account v1 API",
-                    Version = "v1"
-                });
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -74,13 +63,6 @@ namespace Payments.Account
 
                 app.UseCors(DevelopmentCorsName);
             }
-
-            app.UseSwagger();
-
-            app.UseSwaggerUI(options =>
-            {
-                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Chabloom Payments Account v1 API");
-            });
 
             app.UseIdentityServer();
 
