@@ -1,6 +1,5 @@
 // Copyright 2020 Chabloom LC. All rights reserved.
 
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -14,8 +13,6 @@ namespace Payments.Account
 {
     public class Startup
     {
-        private const string DevelopmentCorsName = "Development";
-
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -30,26 +27,27 @@ namespace Payments.Account
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddIdentityCore<ApplicationUser>()
+            services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
             services.AddIdentityServer()
-                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
-
-            services.AddAuthentication()
-                .AddIdentityServerJwt();
+                .AddInMemoryApiResources(Configuration.GetSection("Identity:ApiResources"))
+                .AddInMemoryApiScopes(Configuration.GetSection("Identity:ApiScopes"))
+                .AddInMemoryClients(Configuration.GetSection("Identity:Clients"))
+                .AddInMemoryIdentityResources(Configuration.GetSection("Identity:IdentityResources"))
+                .AddAspNetIdentity<ApplicationUser>();
 
             services.AddControllers();
 
             services.AddCors(options =>
             {
-                options.AddPolicy(DevelopmentCorsName,
+                options.AddPolicy("Development",
                     builder =>
                     {
-                        builder.AllowAnyOrigin()
-                            .AllowAnyHeader()
-                            .AllowAnyMethod();
+                        builder.AllowAnyOrigin();
+                        builder.AllowAnyHeader();
+                        builder.AllowAnyMethod();
                     });
             });
         }
@@ -60,8 +58,7 @@ namespace Payments.Account
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-
-                app.UseCors(DevelopmentCorsName);
+                app.UseCors("Development");
             }
 
             app.UseIdentityServer();
