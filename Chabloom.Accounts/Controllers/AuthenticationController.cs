@@ -1,8 +1,10 @@
 ﻿// Copyright 2020 Chabloom LC. All rights reserved.
 
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Chabloom.Accounts.Data;
 using Chabloom.Accounts.Models;
+using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -131,6 +133,10 @@ namespace Chabloom.Accounts.Controllers
             {
                 return BadRequest(result.Errors);
             }
+
+            // Add the user name claim
+            await _userManager.AddClaimAsync(user, new Claim(JwtClaimTypes.Name, model.Name))
+                .ConfigureAwait(false);
 
             // Return success status code
             return Ok();
