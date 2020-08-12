@@ -1,5 +1,7 @@
 // Copyright 2020 Chabloom LC. All rights reserved.
 
+using System.Collections.Generic;
+using IdentityServer4.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -31,7 +33,11 @@ namespace Payments.Account
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.AddIdentityServer()
+            services.AddIdentityServer(options =>
+                {
+                    options.UserInteraction.LoginUrl = "http://localhost:3000/login";
+                    options.UserInteraction.LogoutUrl = "http://localhost:3000/logout";
+                })
                 .AddInMemoryApiResources(Configuration.GetSection("Identity:ApiResources"))
                 .AddInMemoryApiScopes(Configuration.GetSection("Identity:ApiScopes"))
                 .AddInMemoryClients(Configuration.GetSection("Identity:Clients"))
@@ -45,9 +51,10 @@ namespace Payments.Account
                 options.AddPolicy("Development",
                     builder =>
                     {
-                        builder.AllowAnyOrigin();
+                        builder.WithOrigins("http://localhost:3000");
                         builder.AllowAnyHeader();
                         builder.AllowAnyMethod();
+                        builder.AllowCredentials();
                     });
             });
         }
