@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Payments.Account.Models
+namespace Chabloom.Accounts.Models
 {
     public class UserViewModel
     {

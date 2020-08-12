@@ -9,9 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Payments.Account.Data;
+using Chabloom.Accounts.Data;
 
-namespace Payments.Account
+namespace Chabloom.Accounts
 {
     public class Startup
     {

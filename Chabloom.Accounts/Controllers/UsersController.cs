@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Payments.Account.Data;
-using Payments.Account.Models;
+using Chabloom.Accounts.Data;
+using Chabloom.Accounts.Models;
 
-namespace Payments.Account.Controllers
+namespace Chabloom.Accounts.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

@@ -2,7 +2,7 @@
 
 using Microsoft.AspNetCore.Identity;
 
-namespace Payments.Account.Data
+namespace Chabloom.Accounts.Data
 {
     public class ApplicationUser : IdentityUser
     {

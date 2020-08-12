@@ -3,7 +3,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Payments.Account.Data
+namespace Chabloom.Accounts.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {

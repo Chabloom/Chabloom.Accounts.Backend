@@ -3,7 +3,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace Payments.Account
+namespace Chabloom.Accounts
 {
     public static class Program
     {

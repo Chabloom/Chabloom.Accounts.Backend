@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Payments.Account.Data.Migrations
+namespace Chabloom.Accounts.Data.Migrations
 {
     public partial class Migration1 : Migration
     {

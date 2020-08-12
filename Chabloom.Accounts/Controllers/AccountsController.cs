@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Payments.Account.Data;
+using Chabloom.Accounts.Data;
 
-namespace Payments.Account.Controllers
+namespace Chabloom.Accounts.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

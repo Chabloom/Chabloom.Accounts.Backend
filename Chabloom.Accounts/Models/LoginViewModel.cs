@@ -2,7 +2,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Payments.Account.Models
+namespace Chabloom.Accounts.Models
 {
     public class LoginViewModel
     {
