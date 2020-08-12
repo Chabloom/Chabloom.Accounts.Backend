@@ -43,6 +43,7 @@ namespace Chabloom.Accounts
                 .AddInMemoryApiScopes(Configuration.GetSection("Identity:ApiScopes"))
                 .AddInMemoryClients(Configuration.GetSection("Identity:Clients"))
                 .AddInMemoryIdentityResources(Configuration.GetSection("Identity:IdentityResources"))
+                .AddDeveloperSigningCredential()
                 .AddAspNetIdentity<ApplicationUser>();
 
             services.AddControllers();
