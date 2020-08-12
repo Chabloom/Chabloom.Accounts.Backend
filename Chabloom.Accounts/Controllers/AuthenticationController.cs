@@ -66,6 +66,10 @@ namespace Chabloom.Accounts.Controllers
                 return Unauthorized();
             }
 
+            // Sign the user in to the application
+            await _signInManager.SignInAsync(user, true)
+                .ConfigureAwait(false);
+
             // Find the user claims principal
             var claimsPrincipal = await _claimsPrincipalFactory.CreateAsync(user)
                 .ConfigureAwait(false);
@@ -75,7 +79,7 @@ namespace Chabloom.Accounts.Controllers
                 .ConfigureAwait(false);
 
             // Return success status code
-            return NoContent();
+            return Ok();
         }
 
         /// <summary>
@@ -91,7 +95,45 @@ namespace Chabloom.Accounts.Controllers
                 .ConfigureAwait(false);
 
             // Return success status code
-            return NoContent();
+            return Ok();
+        }
+
+        /// <summary>
+        ///     Register an application user
+        /// </summary>
+        /// <param name="model">The register view model</param>
+        /// <returns>A 204 status code on success, else a failure status code</returns>
+        [AllowAnonymous]
+        [HttpPost("Register")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        public async Task<IActionResult> Register([FromBody] RegisterViewModel model)
+        {
+            // Validate the model passed to the endpoint
+            if (!ModelState.IsValid || model == null)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Initialize the user object
+            var user = new ApplicationUser
+            {
+                UserName = model.Email,
+                Email = model.Email,
+                PhoneNumber = model.Phone
+            };
+
+            // Create the user
+            var result = await _userManager.CreateAsync(user, model.Password)
+                .ConfigureAwait(false);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors);
+            }
+
+            // Return success status code
+            return Ok();
         }
     }
 }
