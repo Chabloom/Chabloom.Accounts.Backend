@@ -17,6 +17,12 @@ import {makeStyles} from "@material-ui/core/styles";
 import logo from "../logo.svg"
 import "./Login.scss"
 
+interface LoginViewModel {
+    email: string;
+    password: string;
+    returnUrl: string;
+}
+
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         paper: {
@@ -43,7 +49,7 @@ const Login: React.FC = () => {
     let returnUrl = params.get("ReturnUrl");
 
     return (
-        <Grid item xs={12} sm={4}>
+        <Grid item xs={12} sm={8} md={4}>
             <Paper className={classes.paper} elevation={3}>
                 <img src={logo} className="logo" alt="logo"/>
                 <Typography variant="h5">Sign in</Typography>
@@ -73,14 +79,16 @@ const Login: React.FC = () => {
                             setError("");
                             setProcessing(true);
                             const data = {
-                                "email": email,
-                                "password": password
-                            };
+                                email: email,
+                                password: password,
+                                returnUrl: returnUrl,
+                            } as LoginViewModel;
                             fetch("https://localhost:44303/api/authentication/login", {
                                 method: "POST",
                                 headers: {
                                     'Content-Type': 'application/json'
                                 },
+                                credentials: 'include',
                                 body: JSON.stringify(data)
                             }).then(value => {
                                 if (value.status === 401) {
