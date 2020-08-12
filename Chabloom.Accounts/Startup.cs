@@ -1,7 +1,6 @@
 // Copyright 2020 Chabloom LC. All rights reserved.
 
-using System.Collections.Generic;
-using IdentityServer4.Models;
+using Chabloom.Accounts.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -9,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Chabloom.Accounts.Data;
 
 namespace Chabloom.Accounts
 {
@@ -33,10 +31,13 @@ namespace Chabloom.Accounts
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            // Get the frontend application address
+            var frontendAddress = Configuration.GetValue<string>("FrontendAddress");
+
             services.AddIdentityServer(options =>
                 {
-                    options.UserInteraction.LoginUrl = "http://localhost:3000/login";
-                    options.UserInteraction.LogoutUrl = "http://localhost:3000/logout";
+                    options.UserInteraction.LoginUrl = $"{frontendAddress}/login";
+                    options.UserInteraction.LogoutUrl = $"{frontendAddress}/logout";
                 })
                 .AddInMemoryApiResources(Configuration.GetSection("Identity:ApiResources"))
                 .AddInMemoryApiScopes(Configuration.GetSection("Identity:ApiScopes"))
@@ -51,7 +52,7 @@ namespace Chabloom.Accounts
                 options.AddPolicy("Development",
                     builder =>
                     {
-                        builder.WithOrigins("http://localhost:3000");
+                        builder.WithOrigins(frontendAddress);
                         builder.AllowAnyHeader();
                         builder.AllowAnyMethod();
                         builder.AllowCredentials();
