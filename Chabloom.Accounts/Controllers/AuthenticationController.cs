@@ -1,42 +1,50 @@
 ﻿// Copyright 2020 Chabloom LC. All rights reserved.
 
-using System.Security.Claims;
 using System.Threading.Tasks;
-using IdentityServer4.Models;
-using IdentityServer4.Services;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Chabloom.Accounts.Data;
 using Chabloom.Accounts.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Chabloom.Accounts.Controllers
 {
+    /// <summary>
+    ///     This controller is responsible for managing authentication of application users
+    /// </summary>
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
+    [Produces("application/json")]
     public class AuthenticationController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUserClaimsPrincipalFactory<ApplicationUser> _claimsPrincipalFactory;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IUserClaimsPrincipalFactory<ApplicationUser> _claimsPrincipalFactory;
 
-        public AuthenticationController(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager, IUserClaimsPrincipalFactory<ApplicationUser> claimsPrincipalFactory)
+        public AuthenticationController(UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            IUserClaimsPrincipalFactory<ApplicationUser> claimsPrincipalFactory)
         {
-            _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _claimsPrincipalFactory = claimsPrincipalFactory;
         }
 
+        /// <summary>
+        ///     Log a user into the application
+        /// </summary>
+        /// <param name="model">The login view model</param>
+        /// <returns>A 204 status code on success, else a failure status code</returns>
         [AllowAnonymous]
         [HttpPost("Login")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
         public async Task<IActionResult> Login([FromBody] LoginViewModel model)
         {
+            // Validate the model passed to the endpoint
             if (!ModelState.IsValid || model == null)
             {
                 return BadRequest(ModelState);
@@ -51,14 +59,12 @@ namespace Chabloom.Accounts.Controllers
             }
 
             // Sign the user in with a password
-            await _signInManager.SignInAsync(user, true)
+            var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false)
                 .ConfigureAwait(false);
-            //var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false)
-            //.ConfigureAwait(false);
-            //if (!result.Succeeded)
-            //{
-            //    return Unauthorized();
-            //}
+            if (!result.Succeeded)
+            {
+                return Unauthorized();
+            }
 
             // Find the user claims principal
             var claimsPrincipal = await _claimsPrincipalFactory.CreateAsync(user)
@@ -68,23 +74,24 @@ namespace Chabloom.Accounts.Controllers
             await HttpContext.SignInAsync(claimsPrincipal)
                 .ConfigureAwait(false);
 
-            // Return success
-            return Ok();
+            // Return success status code
+            return NoContent();
         }
 
-        [Authorize]
+        /// <summary>
+        ///     Sign a user out of the application
+        /// </summary>
+        /// <returns>A 204 response code</returns>
         [HttpPost("Logout")]
+        [ProducesResponseType(204)]
         public async Task<IActionResult> Logout()
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            await _signInManager.SignOutAsync()
+            // Sign the user out
+            await HttpContext.SignOutAsync()
                 .ConfigureAwait(false);
 
-            return Ok();
+            // Return success status code
+            return NoContent();
         }
     }
 }
