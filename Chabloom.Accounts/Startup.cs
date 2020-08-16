@@ -54,6 +54,8 @@ namespace Chabloom.Accounts
                     builder =>
                     {
                         builder.WithOrigins(frontendAddress);
+                        builder.WithOrigins("http://localhost:3000");
+                        builder.WithOrigins("http://localhost:3001");
                         builder.AllowAnyHeader();
                         builder.AllowAnyMethod();
                         builder.AllowCredentials();
