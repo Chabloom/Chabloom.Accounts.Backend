@@ -42,8 +42,8 @@ namespace Chabloom.Accounts
 
             services.AddIdentityServer(options =>
                 {
-                    options.UserInteraction.LoginUrl = "https://localhost:44303/login";
-                    options.UserInteraction.LogoutUrl = "https://localhost:44303/logout";
+                    options.UserInteraction.LoginUrl = "http://localhost:3000/login";
+                    options.UserInteraction.LogoutUrl = "http://localhost:3000/logout";
                 })
                 .AddConfigurationStore(options => options.ConfigureDbContext = x =>
                     x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
