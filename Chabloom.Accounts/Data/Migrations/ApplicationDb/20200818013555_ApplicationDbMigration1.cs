@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Chabloom.Accounts.Data.Migrations
+namespace Chabloom.Accounts.Data.Migrations.ApplicationDb
 {
-    public partial class Migration1 : Migration
+    public partial class ApplicationDbMigration1 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
