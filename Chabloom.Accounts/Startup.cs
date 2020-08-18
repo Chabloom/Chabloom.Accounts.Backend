@@ -1,5 +1,6 @@
 // Copyright 2020 Chabloom LC. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Chabloom.Accounts.Data;
@@ -13,17 +14,20 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 
 namespace Chabloom.Accounts
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            Environment = env;
         }
 
         public IConfiguration Configuration { get; }
+        public IWebHostEnvironment Environment { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -36,13 +40,10 @@ namespace Chabloom.Accounts
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            // Get the frontend application address
-            var frontendAddress = Configuration.GetValue<string>("FrontendAddress");
-
             services.AddIdentityServer(options =>
                 {
-                    options.UserInteraction.LoginUrl = $"{frontendAddress}/login";
-                    options.UserInteraction.LogoutUrl = $"{frontendAddress}/logout";
+                    options.UserInteraction.LoginUrl = "https://localhost:44303/login";
+                    options.UserInteraction.LogoutUrl = "https://localhost:44303/logout";
                 })
                 .AddConfigurationStore(options => options.ConfigureDbContext = x =>
                     x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
@@ -55,19 +56,39 @@ namespace Chabloom.Accounts
 
             services.AddControllers();
 
-            services.AddCors(options =>
+            if (Environment.IsDevelopment())
             {
-                options.AddPolicy("Development",
-                    builder =>
+                // Setup development CORS
+                services.AddCors(options =>
+                {
+                    options.AddPolicy("Development",
+                        builder =>
+                        {
+                            builder.WithOrigins("https://localhost:44303");
+                            builder.WithOrigins("http://localhost:3000");
+                            builder.WithOrigins("http://localhost:3001");
+                            builder.AllowAnyMethod();
+                            builder.AllowAnyHeader();
+                            builder.AllowCredentials();
+                        });
+                });
+
+                // Setup generated OpenAPI documentation
+                services.AddSwaggerGen(options =>
+                {
+                    options.SwaggerDoc("v1", new OpenApiInfo
                     {
-                        builder.WithOrigins(frontendAddress);
-                        builder.WithOrigins("http://localhost:3000");
-                        builder.WithOrigins("http://localhost:3001");
-                        builder.AllowAnyHeader();
-                        builder.AllowAnyMethod();
-                        builder.AllowCredentials();
+                        Title = "Chabloom Accounts",
+                        Description = "Chabloom Accounts v1 API",
+                        Version = "v1"
                     });
-            });
+                    options.AddSecurityDefinition("openid", new OpenApiSecurityScheme
+                    {
+                        Type = SecuritySchemeType.OpenIdConnect,
+                        OpenIdConnectUrl = new Uri("https://localhost:44303/.well-known/openid-configuration")
+                    });
+                });
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -76,7 +97,13 @@ namespace Chabloom.Accounts
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseDatabaseErrorPage();
                 app.UseCors("Development");
+                app.UseSwagger(options => options.RouteTemplate = "/swagger/{documentName}/chabloom-accounts-api.json");
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/swagger/v1/chabloom-accounts-api.json", "Chabloom Accounts v1 API");
+                });
             }
 
             app.UseIdentityServer();
