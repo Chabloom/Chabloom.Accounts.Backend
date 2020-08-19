@@ -38,11 +38,14 @@ namespace Chabloom.Accounts
 
             // Get the public address for the current environment
             var frontendPublicAddress = System.Environment.GetEnvironmentVariable("FRONTEND_PUBLIC_ADDRESS");
+            var appPublicAddress = System.Environment.GetEnvironmentVariable("APP_PUBLIC_ADDRESS");
             var jwtPublicAddress = System.Environment.GetEnvironmentVariable("JWT_PUBLIC_ADDRESS");
             if (string.IsNullOrEmpty(frontendPublicAddress) ||
+                string.IsNullOrEmpty(appPublicAddress) ||
                 string.IsNullOrEmpty(jwtPublicAddress))
             {
                 frontendPublicAddress = "http://localhost:3000";
+                appPublicAddress = "http://localhost:3001";
                 jwtPublicAddress = "https://localhost:44303";
             }
 
@@ -75,7 +78,7 @@ namespace Chabloom.Accounts
                         builder =>
                         {
                             builder.WithOrigins(frontendPublicAddress);
-                            builder.WithOrigins("http://localhost:3001");
+                            builder.WithOrigins(appPublicAddress);
                             builder.AllowAnyMethod();
                             builder.AllowAnyHeader();
                             builder.AllowCredentials();
@@ -107,6 +110,7 @@ namespace Chabloom.Accounts
                         builder =>
                         {
                             builder.WithOrigins(frontendPublicAddress);
+                            builder.WithOrigins(appPublicAddress);
                             builder.AllowAnyMethod();
                             builder.AllowAnyHeader();
                             builder.AllowCredentials();
