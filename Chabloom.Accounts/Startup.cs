@@ -36,14 +36,24 @@ namespace Chabloom.Accounts
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
 
+            // Get the public address for the current environment
+            var frontendPublicAddress = System.Environment.GetEnvironmentVariable("FRONTEND_PUBLIC_ADDRESS");
+            var jwtPublicAddress = System.Environment.GetEnvironmentVariable("JWT_PUBLIC_ADDRESS");
+            if (string.IsNullOrEmpty(frontendPublicAddress) ||
+                string.IsNullOrEmpty(jwtPublicAddress))
+            {
+                frontendPublicAddress = "http://localhost:3000";
+                jwtPublicAddress = "https://localhost:44303";
+            }
+
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
             services.AddIdentityServer(options =>
                 {
-                    options.UserInteraction.LoginUrl = "http://localhost:3000/login";
-                    options.UserInteraction.LogoutUrl = "http://localhost:3000/logout";
+                    options.UserInteraction.LoginUrl = $"{frontendPublicAddress}/login";
+                    options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/logout";
                 })
                 .AddConfigurationStore(options => options.ConfigureDbContext = x =>
                     x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
@@ -64,8 +74,7 @@ namespace Chabloom.Accounts
                     options.AddPolicy("Development",
                         builder =>
                         {
-                            builder.WithOrigins("https://localhost:44303");
-                            builder.WithOrigins("http://localhost:3000");
+                            builder.WithOrigins(frontendPublicAddress);
                             builder.WithOrigins("http://localhost:3001");
                             builder.AllowAnyMethod();
                             builder.AllowAnyHeader();
@@ -85,8 +94,23 @@ namespace Chabloom.Accounts
                     options.AddSecurityDefinition("openid", new OpenApiSecurityScheme
                     {
                         Type = SecuritySchemeType.OpenIdConnect,
-                        OpenIdConnectUrl = new Uri("https://localhost:44303/.well-known/openid-configuration")
+                        OpenIdConnectUrl = new Uri($"{jwtPublicAddress}/.well-known/openid-configuration")
                     });
+                });
+            }
+            else
+            {
+                // Setup production CORS
+                services.AddCors(options =>
+                {
+                    options.AddPolicy("Production",
+                        builder =>
+                        {
+                            builder.WithOrigins(frontendPublicAddress);
+                            builder.AllowAnyMethod();
+                            builder.AllowAnyHeader();
+                            builder.AllowCredentials();
+                        });
                 });
             }
         }
@@ -104,6 +128,10 @@ namespace Chabloom.Accounts
                 {
                     options.SwaggerEndpoint("/swagger/v1/chabloom-accounts-api.json", "Chabloom Accounts v1 API");
                 });
+            }
+            else
+            {
+                app.UseCors("Production");
             }
 
             app.UseIdentityServer();
