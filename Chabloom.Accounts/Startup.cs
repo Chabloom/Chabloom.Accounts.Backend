@@ -188,13 +188,11 @@ namespace Chabloom.Accounts
                             },
                             RedirectUris = new List<string>
                             {
-                                "http://localhost:3000/signin-oidc",
-                                "http://localhost:3001/signin-oidc"
+                                "urn:ietf:wg:oauth:2.0:oob"
                             },
                             PostLogoutRedirectUris = new List<string>
                             {
-                                "http://localhost:3000/signout-oidc",
-                                "http://localhost:3001/signout-oidc"
+                                "urn:ietf:wg:oauth:2.0:oob"
                             },
                             RequireConsent = false,
                             RequireClientSecret = false,
