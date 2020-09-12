@@ -11,5 +11,8 @@ namespace Chabloom.Accounts.Models
 
         [Required]
         public string Password { get; set; }
+
+        [Required]
+        public bool Remember { get; set; }
     }
 }

@@ -69,7 +69,7 @@ namespace Chabloom.Accounts.Controllers
             }
 
             // Sign the user in to the application
-            await _signInManager.SignInAsync(user, true)
+            await _signInManager.SignInAsync(user, model.Remember)
                 .ConfigureAwait(false);
 
             // Find the user claims principal
