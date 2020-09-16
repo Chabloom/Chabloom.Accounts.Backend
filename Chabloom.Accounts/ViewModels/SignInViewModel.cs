@@ -2,9 +2,9 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Chabloom.Accounts.Models
+namespace Chabloom.Accounts.ViewModels
 {
-    public class LoginViewModel
+    public class SignInViewModel
     {
         [Required]
         public string Email { get; set; }
@@ -14,5 +14,8 @@ namespace Chabloom.Accounts.Models
 
         [Required]
         public bool Remember { get; set; }
+
+        [Required]
+        public string ReturnUrl { get; set; }
     }
 }

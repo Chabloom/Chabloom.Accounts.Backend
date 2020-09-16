@@ -2,7 +2,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Chabloom.Accounts.Models
+namespace Chabloom.Accounts.ViewModels
 {
     public class RegisterViewModel
     {
