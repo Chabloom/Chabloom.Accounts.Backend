@@ -55,8 +55,9 @@ namespace Chabloom.Accounts
 
             services.AddIdentityServer(options =>
                 {
-                    options.UserInteraction.LoginUrl = $"{frontendPublicAddress}/login";
-                    options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/logout";
+                    options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
+                    options.UserInteraction.LoginUrl = $"{frontendPublicAddress}/signIn";
+                    options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/signOut";
                 })
                 .AddConfigurationStore(options => options.ConfigureDbContext = x =>
                     x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
