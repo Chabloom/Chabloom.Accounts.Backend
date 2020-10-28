@@ -1,6 +1,5 @@
 // Copyright 2020 Chabloom LC. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Chabloom.Accounts.Data;
@@ -14,7 +13,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
 
 namespace Chabloom.Accounts
 {
@@ -37,16 +35,16 @@ namespace Chabloom.Accounts
                     Configuration.GetConnectionString("DefaultConnection")));
 
             // Get the public address for the current environment
-            var frontendPublicAddress = System.Environment.GetEnvironmentVariable("FRONTEND_PUBLIC_ADDRESS");
-            var appPublicAddress = System.Environment.GetEnvironmentVariable("APP_PUBLIC_ADDRESS");
-            var jwtPublicAddress = System.Environment.GetEnvironmentVariable("JWT_PUBLIC_ADDRESS");
-            if (string.IsNullOrEmpty(frontendPublicAddress) ||
-                string.IsNullOrEmpty(appPublicAddress) ||
-                string.IsNullOrEmpty(jwtPublicAddress))
+            var accountsPublicAddress = System.Environment.GetEnvironmentVariable("ACCOUNTS_PUBLIC_ADDRESS");
+            var paymentsPublicAddress = System.Environment.GetEnvironmentVariable("PAYMENTS_PUBLIC_ADDRESS");
+            var processingPublicAddress = System.Environment.GetEnvironmentVariable("PROCESSING_PUBLIC_ADDRESS");
+            if (string.IsNullOrEmpty(accountsPublicAddress) ||
+                string.IsNullOrEmpty(paymentsPublicAddress) ||
+                string.IsNullOrEmpty(processingPublicAddress))
             {
-                frontendPublicAddress = "http://localhost:3000";
-                appPublicAddress = "http://localhost:3001";
-                jwtPublicAddress = "https://localhost:44303";
+                accountsPublicAddress = "http://localhost:3000";
+                paymentsPublicAddress = "http://localhost:3001";
+                processingPublicAddress = "http://localhost:3002";
             }
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -55,9 +53,9 @@ namespace Chabloom.Accounts
 
             services.AddIdentityServer(options =>
                 {
-                    options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
-                    options.UserInteraction.LoginUrl = $"{frontendPublicAddress}/signIn";
-                    options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/signOut";
+                    options.UserInteraction.ErrorUrl = $"{accountsPublicAddress}/error";
+                    options.UserInteraction.LoginUrl = $"{accountsPublicAddress}/signIn";
+                    options.UserInteraction.LogoutUrl = $"{accountsPublicAddress}/signOut";
                 })
                 .AddConfigurationStore(options => options.ConfigureDbContext = x =>
                     x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
@@ -70,54 +68,20 @@ namespace Chabloom.Accounts
 
             services.AddControllers();
 
-            if (Environment.IsDevelopment())
+            // Setup CORS
+            services.AddCors(options =>
             {
-                // Setup development CORS
-                services.AddCors(options =>
-                {
-                    options.AddPolicy("Development",
-                        builder =>
-                        {
-                            builder.WithOrigins(frontendPublicAddress);
-                            builder.WithOrigins(appPublicAddress);
-                            builder.AllowAnyMethod();
-                            builder.AllowAnyHeader();
-                            builder.AllowCredentials();
-                        });
-                });
-
-                // Setup generated OpenAPI documentation
-                services.AddSwaggerGen(options =>
-                {
-                    options.SwaggerDoc("v1", new OpenApiInfo
+                options.AddPolicy("CORS",
+                    builder =>
                     {
-                        Title = "Chabloom Accounts",
-                        Description = "Chabloom Accounts v1 API",
-                        Version = "v1"
+                        builder.WithOrigins(accountsPublicAddress);
+                        builder.WithOrigins(paymentsPublicAddress);
+                        builder.WithOrigins(processingPublicAddress);
+                        builder.AllowAnyMethod();
+                        builder.AllowAnyHeader();
+                        builder.AllowCredentials();
                     });
-                    options.AddSecurityDefinition("openid", new OpenApiSecurityScheme
-                    {
-                        Type = SecuritySchemeType.OpenIdConnect,
-                        OpenIdConnectUrl = new Uri($"{jwtPublicAddress}/.well-known/openid-configuration")
-                    });
-                });
-            }
-            else
-            {
-                // Setup production CORS
-                services.AddCors(options =>
-                {
-                    options.AddPolicy("Production",
-                        builder =>
-                        {
-                            builder.WithOrigins(frontendPublicAddress);
-                            builder.WithOrigins(appPublicAddress);
-                            builder.AllowAnyMethod();
-                            builder.AllowAnyHeader();
-                            builder.AllowCredentials();
-                        });
-                });
-            }
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -127,19 +91,7 @@ namespace Chabloom.Accounts
             {
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
-                app.UseCors("Development");
-                app.UseSwagger(options => options.RouteTemplate = "/swagger/{documentName}/chabloom-accounts-api.json");
-                app.UseSwaggerUI(options =>
-                {
-                    options.SwaggerEndpoint("/swagger/v1/chabloom-accounts-api.json", "Chabloom Accounts v1 API");
-                });
             }
-            else
-            {
-                app.UseCors("Production");
-            }
-
-            app.UseIdentityServer();
 
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
             {
@@ -164,13 +116,13 @@ namespace Chabloom.Accounts
                             },
                             RedirectUris = new List<string>
                             {
-                                "http://localhost:3000/signin-oidc",
-                                "http://localhost:3001/signin-oidc"
+                                "http://localhost:3001/signin-oidc",
+                                "https://payments-test.chabloom.com/signin-oidc"
                             },
                             PostLogoutRedirectUris = new List<string>
                             {
-                                "http://localhost:3000/signout-oidc",
-                                "http://localhost:3001/signout-oidc"
+                                "http://localhost:3001/signout-oidc",
+                                "https://payments-test.chabloom.com/signout-oidc"
                             },
                             RequireConsent = false,
                             RequireClientSecret = false,
@@ -189,11 +141,11 @@ namespace Chabloom.Accounts
                             },
                             RedirectUris = new List<string>
                             {
-                                "urn:ietf:wg:oauth:2.0:oob"
+                                "com.chabloom.payments:/callback"
                             },
                             PostLogoutRedirectUris = new List<string>
                             {
-                                "urn:ietf:wg:oauth:2.0:oob"
+                                "com.chabloom.payments:/callback"
                             },
                             RequireConsent = false,
                             RequireClientSecret = false,
@@ -201,27 +153,29 @@ namespace Chabloom.Accounts
                         },
                         new Client
                         {
-                            ClientId = "Chabloom.Payments.Postman",
-                            ClientName = "Chabloom.Payments.Postman",
+                            ClientId = "Chabloom.Processing.Frontend",
+                            ClientName = "Chabloom.Processing.Frontend",
                             AllowedGrantTypes = GrantTypes.Code,
                             AllowedScopes = new List<string>
                             {
                                 "openid",
                                 "profile",
-                                "Chabloom.Payments"
+                                "Chabloom.Processing"
                             },
                             RedirectUris = new List<string>
                             {
-                                "https://oauth.pstmn.io/v1/callback"
+                                "http://localhost:3002/signin-oidc",
+                                "https://processing-test.chabloom.com/signin-oidc"
                             },
                             PostLogoutRedirectUris = new List<string>
                             {
-                                "https://oauth.pstmn.io/v1/callback"
+                                "http://localhost:3002/signout-oidc",
+                                "https://processing-test.chabloom.com/signout-oidc"
                             },
                             RequireConsent = false,
                             RequireClientSecret = false,
                             RequirePkce = true
-                        }
+                        },
                     };
                     // Convert client models to entities
                     var clientEntities = clients
@@ -254,7 +208,8 @@ namespace Chabloom.Accounts
                     // Create initial API scopes
                     var apiScopes = new List<ApiScope>
                     {
-                        new ApiScope("Chabloom.Payments")
+                        new ApiScope("Chabloom.Payments"),
+                        new ApiScope("Chabloom.Processing")
                     };
                     // Convert API scope models to entities
                     var apiScopeEntities = apiScopes
@@ -273,6 +228,10 @@ namespace Chabloom.Accounts
                         new ApiResource("Chabloom.Payments")
                         {
                             Scopes = {"Chabloom.Payments"}
+                        },
+                        new ApiResource("Chabloom.Processing")
+                        {
+                            Scopes = {"Chabloom.Processing"}
                         }
                     };
                     // Convert API resource models to entities
@@ -284,6 +243,10 @@ namespace Chabloom.Accounts
                     context.SaveChanges();
                 }
             }
+
+            app.UseIdentityServer();
+
+            app.UseCors("CORS");
 
             app.UseHttpsRedirection();
 
