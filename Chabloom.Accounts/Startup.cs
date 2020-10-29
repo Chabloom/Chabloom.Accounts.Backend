@@ -105,6 +105,21 @@ namespace Chabloom.Accounts
                     {
                         new Client
                         {
+                            ClientId = "Chabloom.Payments.Backend",
+                            ClientName = "Chabloom.Payments.Backend",
+                            AllowedGrantTypes = GrantTypes.ClientCredentials,
+                            AllowedScopes = new List<string>
+                            {
+                                "Chabloom.Processing",
+                                "Chabloom.Processing.IPC"
+                            },
+                            ClientSecrets =
+                            {
+                                new Secret("fs*5bfL53%xUR9KhoQAc*Tg3&vd42bz&".Sha256())
+                            }
+                        },
+                        new Client
+                        {
                             ClientId = "Chabloom.Payments.Frontend",
                             ClientName = "Chabloom.Payments.Frontend",
                             AllowedGrantTypes = GrantTypes.Code,
@@ -209,7 +224,9 @@ namespace Chabloom.Accounts
                     var apiScopes = new List<ApiScope>
                     {
                         new ApiScope("Chabloom.Payments"),
-                        new ApiScope("Chabloom.Processing")
+                        new ApiScope("Chabloom.Payments.IPC"),
+                        new ApiScope("Chabloom.Processing"),
+                        new ApiScope("Chabloom.Processing.IPC")
                     };
                     // Convert API scope models to entities
                     var apiScopeEntities = apiScopes
@@ -229,9 +246,17 @@ namespace Chabloom.Accounts
                         {
                             Scopes = {"Chabloom.Payments"}
                         },
+                        new ApiResource("Chabloom.Payments.IPC")
+                        {
+                            Scopes = {"Chabloom.Payments.IPC"}
+                        },
                         new ApiResource("Chabloom.Processing")
                         {
                             Scopes = {"Chabloom.Processing"}
+                        },
+                        new ApiResource("Chabloom.Processing.IPC")
+                        {
+                            Scopes = {"Chabloom.Processing.IPC"}
                         }
                     };
                     // Convert API resource models to entities
