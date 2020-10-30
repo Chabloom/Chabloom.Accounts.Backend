@@ -80,17 +80,17 @@ namespace Chabloom.Accounts
                 corsOrigins.Add("http://localhost:3001");
                 corsOrigins.Add("http://localhost:3002");
             }
+
             // Add the CORS policy
             services.AddCors(options =>
             {
-                options.AddPolicy("CORS",
-                    builder =>
-                    {
-                        builder.WithOrigins(corsOrigins.ToArray());
-                        builder.AllowAnyMethod();
-                        builder.AllowAnyHeader();
-                        builder.AllowCredentials();
-                    });
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins(corsOrigins.ToArray());
+                    builder.AllowAnyMethod();
+                    builder.AllowAnyHeader();
+                    builder.AllowCredentials();
+                });
             });
 
             services.AddApplicationInsightsTelemetry();
@@ -285,7 +285,7 @@ namespace Chabloom.Accounts
 
             app.UseIdentityServer();
 
-            app.UseCors("CORS");
+            app.UseCors();
 
             app.UseHttpsRedirection();
 
