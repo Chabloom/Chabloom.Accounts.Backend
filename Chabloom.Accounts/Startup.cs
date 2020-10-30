@@ -283,9 +283,9 @@ namespace Chabloom.Accounts
                 }
             }
 
-            app.UseIdentityServer();
-
             app.UseCors();
+
+            app.UseIdentityServer();
 
             app.UseHttpsRedirection();
 
