@@ -66,17 +66,27 @@ namespace Chabloom.Accounts
                 .AddDeveloperSigningCredential()
                 .AddAspNetIdentity<ApplicationUser>();
 
-            services.AddControllers();
-
-            // Setup CORS
+            // Get CORS origins
+            var corsOrigins = new List<string>
+            {
+                accountsPublicAddress,
+                paymentsPublicAddress,
+                processingPublicAddress
+            };
+            // Add development origins if required
+            if (Environment.IsDevelopment())
+            {
+                corsOrigins.Add("http://localhost:3000");
+                corsOrigins.Add("http://localhost:3001");
+                corsOrigins.Add("http://localhost:3002");
+            }
+            // Add the CORS policy
             services.AddCors(options =>
             {
                 options.AddPolicy("CORS",
                     builder =>
                     {
-                        builder.WithOrigins(accountsPublicAddress);
-                        builder.WithOrigins(paymentsPublicAddress);
-                        builder.WithOrigins(processingPublicAddress);
+                        builder.WithOrigins(corsOrigins.ToArray());
                         builder.AllowAnyMethod();
                         builder.AllowAnyHeader();
                         builder.AllowCredentials();
@@ -84,6 +94,8 @@ namespace Chabloom.Accounts
             });
 
             services.AddApplicationInsightsTelemetry();
+
+            services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
