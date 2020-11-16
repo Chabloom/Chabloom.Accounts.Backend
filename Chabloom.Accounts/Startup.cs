@@ -6,6 +6,7 @@ using Chabloom.Accounts.Data;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -35,16 +36,13 @@ namespace Chabloom.Accounts
                     Configuration.GetConnectionString("DefaultConnection")));
 
             // Get the public address for the current environment
-            var accountsPublicAddress = System.Environment.GetEnvironmentVariable("ACCOUNTS_PUBLIC_ADDRESS");
+            var accountsBackendAddress = System.Environment.GetEnvironmentVariable("ACCOUNTS_BACKEND_ADDRESS");
             var paymentsPublicAddress = System.Environment.GetEnvironmentVariable("PAYMENTS_PUBLIC_ADDRESS");
-            var processingPublicAddress = System.Environment.GetEnvironmentVariable("PROCESSING_PUBLIC_ADDRESS");
-            if (string.IsNullOrEmpty(accountsPublicAddress) ||
-                string.IsNullOrEmpty(paymentsPublicAddress) ||
-                string.IsNullOrEmpty(processingPublicAddress))
+            if (string.IsNullOrEmpty(accountsBackendAddress) ||
+                string.IsNullOrEmpty(paymentsPublicAddress))
             {
-                accountsPublicAddress = "http://localhost:3000";
+                accountsBackendAddress = "http://localhost:5001";
                 paymentsPublicAddress = "http://localhost:3001";
-                processingPublicAddress = "http://localhost:3002";
             }
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -53,9 +51,9 @@ namespace Chabloom.Accounts
 
             services.AddIdentityServer(options =>
                 {
-                    options.UserInteraction.ErrorUrl = $"{accountsPublicAddress}/error";
-                    options.UserInteraction.LoginUrl = $"{accountsPublicAddress}/signIn";
-                    options.UserInteraction.LogoutUrl = $"{accountsPublicAddress}/signOut";
+                    options.UserInteraction.ErrorUrl = $"{paymentsPublicAddress}/Accounts/Error";
+                    options.UserInteraction.LoginUrl = $"{paymentsPublicAddress}/Accounts/SignIn";
+                    options.UserInteraction.LogoutUrl = $"{paymentsPublicAddress}/Accounts/SignOut";
                 })
                 .AddConfigurationStore(options => options.ConfigureDbContext = x =>
                     x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
@@ -66,19 +64,36 @@ namespace Chabloom.Accounts
                 .AddDeveloperSigningCredential()
                 .AddAspNetIdentity<ApplicationUser>();
 
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.Authority = accountsBackendAddress;
+                    options.Audience = "Chabloom.Accounts";
+                });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("ApiScope", policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim("scope", "Chabloom.Accounts");
+                });
+                options.AddPolicy("IpcScope", policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim("scope", "Chabloom.Accounts.IPC");
+                });
+            });
+
             // Get CORS origins
             var corsOrigins = new List<string>
             {
-                accountsPublicAddress,
-                paymentsPublicAddress,
-                processingPublicAddress
+                paymentsPublicAddress
             };
             // Add development origins if required
             if (Environment.IsDevelopment())
             {
                 corsOrigins.Add("http://localhost:3000");
-                corsOrigins.Add("http://localhost:3001");
-                corsOrigins.Add("http://localhost:3002");
             }
 
             // Add the CORS policy
@@ -104,7 +119,6 @@ namespace Chabloom.Accounts
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
             }
 
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
@@ -124,6 +138,8 @@ namespace Chabloom.Accounts
                             AllowedGrantTypes = GrantTypes.ClientCredentials,
                             AllowedScopes = new List<string>
                             {
+                                "Chabloom.Accounts",
+                                "Chabloom.Accounts.IPC",
                                 "Chabloom.Processing",
                                 "Chabloom.Processing.IPC"
                             },
@@ -141,70 +157,24 @@ namespace Chabloom.Accounts
                             {
                                 "openid",
                                 "profile",
-                                "Chabloom.Payments"
+                                "Chabloom.Accounts",
+                                "Chabloom.Payments",
+                                "Chabloom.Processing"
                             },
                             RedirectUris = new List<string>
                             {
-                                "http://localhost:3001/signin-oidc",
+                                "http://localhost:3000/signin-oidc",
                                 "https://payments-test.chabloom.com/signin-oidc"
                             },
                             PostLogoutRedirectUris = new List<string>
                             {
-                                "http://localhost:3001/signout-oidc",
+                                "http://localhost:3000/signout-oidc",
                                 "https://payments-test.chabloom.com/signout-oidc"
                             },
                             RequireConsent = false,
                             RequireClientSecret = false,
                             RequirePkce = true
-                        },
-                        new Client
-                        {
-                            ClientId = "Chabloom.Payments.Native",
-                            ClientName = "Chabloom.Payments.Native",
-                            AllowedGrantTypes = GrantTypes.Code,
-                            AllowedScopes = new List<string>
-                            {
-                                "openid",
-                                "profile",
-                                "Chabloom.Payments"
-                            },
-                            RedirectUris = new List<string>
-                            {
-                                "com.chabloom.payments:/callback"
-                            },
-                            PostLogoutRedirectUris = new List<string>
-                            {
-                                "com.chabloom.payments:/callback"
-                            },
-                            RequireConsent = false,
-                            RequireClientSecret = false,
-                            RequirePkce = true
-                        },
-                        new Client
-                        {
-                            ClientId = "Chabloom.Processing.Frontend",
-                            ClientName = "Chabloom.Processing.Frontend",
-                            AllowedGrantTypes = GrantTypes.Code,
-                            AllowedScopes = new List<string>
-                            {
-                                "openid",
-                                "profile",
-                                "Chabloom.Processing"
-                            },
-                            RedirectUris = new List<string>
-                            {
-                                "http://localhost:3002/signin-oidc",
-                                "https://processing-test.chabloom.com/signin-oidc"
-                            },
-                            PostLogoutRedirectUris = new List<string>
-                            {
-                                "http://localhost:3002/signout-oidc",
-                                "https://processing-test.chabloom.com/signout-oidc"
-                            },
-                            RequireConsent = false,
-                            RequireClientSecret = false,
-                            RequirePkce = true
-                        },
+                        }
                     };
                     // Convert client models to entities
                     var clientEntities = clients
@@ -237,6 +207,8 @@ namespace Chabloom.Accounts
                     // Create initial API scopes
                     var apiScopes = new List<ApiScope>
                     {
+                        new ApiScope("Chabloom.Accounts"),
+                        new ApiScope("Chabloom.Accounts.IPC"),
                         new ApiScope("Chabloom.Payments"),
                         new ApiScope("Chabloom.Payments.IPC"),
                         new ApiScope("Chabloom.Processing"),
@@ -256,6 +228,14 @@ namespace Chabloom.Accounts
                     // Create initial API resources
                     var apiResources = new List<ApiResource>
                     {
+                        new ApiResource("Chabloom.Accounts")
+                        {
+                            Scopes = {"Chabloom.Accounts"}
+                        },
+                        new ApiResource("Chabloom.Accounts.IPC")
+                        {
+                            Scopes = {"Chabloom.Accounts.IPC"}
+                        },
                         new ApiResource("Chabloom.Payments")
                         {
                             Scopes = {"Chabloom.Payments"}
@@ -291,9 +271,10 @@ namespace Chabloom.Accounts
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseEndpoints(endpoints => { endpoints.MapControllers().RequireAuthorization("ApiScope"); });
         }
     }
 }
