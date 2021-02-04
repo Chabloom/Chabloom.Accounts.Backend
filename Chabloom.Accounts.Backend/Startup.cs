@@ -36,13 +36,13 @@ namespace Chabloom.Accounts.Backend
                     Configuration.GetConnectionString("DefaultConnection")));
 
             // Get the public address for the current environment
-            var accountsBackendAddress = System.Environment.GetEnvironmentVariable("ACCOUNTS_BACKEND_ADDRESS");
-            var paymentsPublicAddress = System.Environment.GetEnvironmentVariable("PAYMENTS_PUBLIC_ADDRESS");
-            if (string.IsNullOrEmpty(accountsBackendAddress) ||
-                string.IsNullOrEmpty(paymentsPublicAddress))
+            var frontendPublicAddress = System.Environment.GetEnvironmentVariable("ACCOUNTS_FRONTEND_ADDRESS");
+            var accountsBackendPublicAddress = System.Environment.GetEnvironmentVariable("ACCOUNTS_BACKEND_ADDRESS");
+            if (string.IsNullOrEmpty(frontendPublicAddress) ||
+                string.IsNullOrEmpty(accountsBackendPublicAddress))
             {
-                accountsBackendAddress = "http://localhost:5001";
-                paymentsPublicAddress = "http://localhost:3001";
+                frontendPublicAddress = "http://localhost:3000";
+                accountsBackendPublicAddress = "http://localhost:5000";
             }
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -51,9 +51,9 @@ namespace Chabloom.Accounts.Backend
 
             services.AddIdentityServer(options =>
                 {
-                    options.UserInteraction.ErrorUrl = $"{paymentsPublicAddress}/error";
-                    options.UserInteraction.LoginUrl = $"{paymentsPublicAddress}/signIn";
-                    options.UserInteraction.LogoutUrl = $"{paymentsPublicAddress}/signOut";
+                    options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
+                    options.UserInteraction.LoginUrl = $"{frontendPublicAddress}/signIn";
+                    options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/signOut";
                 })
                 .AddConfigurationStore(options => options.ConfigureDbContext = x =>
                     x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
@@ -67,7 +67,7 @@ namespace Chabloom.Accounts.Backend
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
-                    options.Authority = accountsBackendAddress;
+                    options.Authority = accountsBackendPublicAddress;
                     options.Audience = "Chabloom.Accounts.Backend";
                 });
 
@@ -88,12 +88,15 @@ namespace Chabloom.Accounts.Backend
             // Get CORS origins
             var corsOrigins = new List<string>
             {
-                paymentsPublicAddress
+                frontendPublicAddress
             };
             // Add development origins if required
             if (Environment.IsDevelopment())
             {
                 corsOrigins.Add("http://localhost:3000");
+                corsOrigins.Add("http://localhost:3001");
+                corsOrigins.Add("http://localhost:3002");
+                corsOrigins.Add("http://localhost:3003");
             }
 
             // Add the CORS policy
