@@ -1,5 +1,5 @@
 apiVersion: v2
-name: Chabloom.Accounts.Backend
+name: chabloom-accounts-backend
 description: Chabloom Accounts Backend
 
 # A chart can be either an 'application' or a 'library' chart.
