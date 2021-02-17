@@ -1,11 +1,8 @@
 // Copyright 2020-2021 Chabloom LC. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using Chabloom.Accounts.Backend.Data;
-using IdentityServer4.EntityFramework.DbContexts;
-using IdentityServer4.EntityFramework.Mappers;
-using IdentityServer4.Models;
+using Chabloom.Accounts.Backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -53,7 +50,7 @@ namespace Chabloom.Accounts.Backend
                 }
             }
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddIdentity<ApplicationUser, ApplicationRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
@@ -86,11 +83,6 @@ namespace Chabloom.Accounts.Backend
                 {
                     policy.RequireAuthenticatedUser();
                     policy.RequireClaim("scope", "Chabloom.Accounts.Backend");
-                });
-                options.AddPolicy("IpcScope", policy =>
-                {
-                    policy.RequireAuthenticatedUser();
-                    policy.RequireClaim("scope", "Chabloom.Accounts.Backend.IPC");
                 });
             });
 
@@ -133,147 +125,7 @@ namespace Chabloom.Accounts.Backend
                 app.UseDeveloperExceptionPage();
             }
 
-            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-            {
-                serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
-
-                var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-                if (!context.Clients.Any())
-                {
-                    // Create initial clients
-                    var clients = new List<Client>
-                    {
-                        new Client
-                        {
-                            ClientId = "Chabloom.Payments.Backend",
-                            ClientName = "Chabloom.Payments.Backend",
-                            AllowedGrantTypes = GrantTypes.ClientCredentials,
-                            AllowedScopes = new List<string>
-                            {
-                                "Chabloom.Accounts.Backend",
-                                "Chabloom.Accounts.Backend.IPC",
-                                "Chabloom.Processing",
-                                "Chabloom.Processing.IPC"
-                            },
-                            ClientSecrets =
-                            {
-                                new Secret("fs*5bfL53%xUR9KhoQAc*Tg3&vd42bz&".Sha256())
-                            }
-                        },
-                        new Client
-                        {
-                            ClientId = "Chabloom.Payments.Frontend",
-                            ClientName = "Chabloom.Payments.Frontend",
-                            AllowedGrantTypes = GrantTypes.Code,
-                            AllowedScopes = new List<string>
-                            {
-                                "openid",
-                                "profile",
-                                "Chabloom.Accounts.Backend",
-                                "Chabloom.Payments",
-                                "Chabloom.Processing"
-                            },
-                            RedirectUris = new List<string>
-                            {
-                                "http://localhost:3000/signin-oidc",
-                                "https://payments-test.chabloom.com/signin-oidc"
-                            },
-                            PostLogoutRedirectUris = new List<string>
-                            {
-                                "http://localhost:3000/signout-oidc",
-                                "https://payments-test.chabloom.com/signout-oidc"
-                            },
-                            RequireConsent = false,
-                            RequireClientSecret = false,
-                            RequirePkce = true
-                        }
-                    };
-                    // Convert client models to entities
-                    var clientEntities = clients
-                        .Select(client => client.ToEntity())
-                        .ToList();
-                    // Add client entities to database
-                    context.Clients.AddRange(clientEntities);
-                    context.SaveChanges();
-                }
-
-                if (!context.IdentityResources.Any())
-                {
-                    // Create initial identity resources
-                    var identityResources = new List<IdentityResource>
-                    {
-                        new IdentityResources.OpenId(),
-                        new IdentityResources.Profile()
-                    };
-                    // Convert identity resource models to entities
-                    var identityResourceEntities = identityResources
-                        .Select(resource => resource.ToEntity())
-                        .ToList();
-                    // Add identity resource entities to database
-                    context.IdentityResources.AddRange(identityResourceEntities);
-                    context.SaveChanges();
-                }
-
-                if (!context.ApiScopes.Any())
-                {
-                    // Create initial API scopes
-                    var apiScopes = new List<ApiScope>
-                    {
-                        new ApiScope("Chabloom.Accounts.Backend"),
-                        new ApiScope("Chabloom.Accounts.Backend.IPC"),
-                        new ApiScope("Chabloom.Payments"),
-                        new ApiScope("Chabloom.Payments.IPC"),
-                        new ApiScope("Chabloom.Processing"),
-                        new ApiScope("Chabloom.Processing.IPC")
-                    };
-                    // Convert API scope models to entities
-                    var apiScopeEntities = apiScopes
-                        .Select(resource => resource.ToEntity())
-                        .ToList();
-                    // Add API scope entities to database
-                    context.ApiScopes.AddRange(apiScopeEntities);
-                    context.SaveChanges();
-                }
-
-                if (!context.ApiResources.Any())
-                {
-                    // Create initial API resources
-                    var apiResources = new List<ApiResource>
-                    {
-                        new ApiResource("Chabloom.Accounts.Backend")
-                        {
-                            Scopes = {"Chabloom.Accounts.Backend"}
-                        },
-                        new ApiResource("Chabloom.Accounts.Backend.IPC")
-                        {
-                            Scopes = {"Chabloom.Accounts.Backend.IPC"}
-                        },
-                        new ApiResource("Chabloom.Payments")
-                        {
-                            Scopes = {"Chabloom.Payments"}
-                        },
-                        new ApiResource("Chabloom.Payments.IPC")
-                        {
-                            Scopes = {"Chabloom.Payments.IPC"}
-                        },
-                        new ApiResource("Chabloom.Processing")
-                        {
-                            Scopes = {"Chabloom.Processing"}
-                        },
-                        new ApiResource("Chabloom.Processing.IPC")
-                        {
-                            Scopes = {"Chabloom.Processing.IPC"}
-                        }
-                    };
-                    // Convert API resource models to entities
-                    var apiResourceEntities = apiResources
-                        .Select(resource => resource.ToEntity())
-                        .ToList();
-                    // Add API resource entities to database
-                    context.ApiResources.AddRange(apiResourceEntities);
-                    context.SaveChanges();
-                }
-            }
+            app.SeedIdentityServer();
 
             app.UseCors();
 
