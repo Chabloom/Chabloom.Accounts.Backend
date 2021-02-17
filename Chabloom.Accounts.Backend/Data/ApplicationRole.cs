@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Chabloom.Accounts.Backend.Data
 {
-    public class ApplicationUser : IdentityUser<Guid>
+    public class ApplicationRole : IdentityRole<Guid>
     {
     }
 }
