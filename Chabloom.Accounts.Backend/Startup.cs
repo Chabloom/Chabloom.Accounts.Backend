@@ -90,10 +90,25 @@ namespace Chabloom.Accounts.Backend
                 corsOrigins.Add("https://accounts-dev-1.chabloom.com");
                 corsOrigins.Add("http://accounts-uat-1.chabloom.com");
                 corsOrigins.Add("https://accounts-uat-1.chabloom.com");
+                corsOrigins.Add("http://billing-dev-1.chabloom.com");
+                corsOrigins.Add("https://billing-dev-1.chabloom.com");
+                corsOrigins.Add("http://billing-uat-1.chabloom.com");
+                corsOrigins.Add("https://billing-uat-1.chabloom.com");
+                corsOrigins.Add("http://ecommerce-dev-1.chabloom.com");
+                corsOrigins.Add("https://ecommerce-dev-1.chabloom.com");
+                corsOrigins.Add("http://ecommerce-uat-1.chabloom.com");
+                corsOrigins.Add("https://ecommerce-uat-1.chabloom.com");
+                corsOrigins.Add("http://transactions-dev-1.chabloom.com");
+                corsOrigins.Add("https://transactions-dev-1.chabloom.com");
+                corsOrigins.Add("http://transactions-uat-1.chabloom.com");
+                corsOrigins.Add("https://transactions-uat-1.chabloom.com");
             }
             else
             {
                 corsOrigins.Add("https://accounts.chabloom.com");
+                corsOrigins.Add("https://billing.chabloom.com");
+                corsOrigins.Add("https://ecommerce.chabloom.com");
+                corsOrigins.Add("https://transactions.chabloom.com");
             }
 
             // Add the CORS policy
