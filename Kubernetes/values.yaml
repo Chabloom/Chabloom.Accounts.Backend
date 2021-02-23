@@ -50,7 +50,7 @@ ingress:
       proxy_set_header X-Forwarded-Proto https;
   hosts:
     - host: accounts-api-dev-1.chabloom.com
-  tls: []
+  tls:
     - secretName: chabloom-accounts-backend-tls
       hosts:
         - accounts-api-dev-1.chabloom.com
