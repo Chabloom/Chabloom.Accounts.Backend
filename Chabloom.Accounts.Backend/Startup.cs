@@ -48,6 +48,7 @@ namespace Chabloom.Accounts.Backend
 
             services.AddIdentityServer(options =>
                 {
+                    options.IssuerUri = "https://accounts-api-dev-1.chabloom.com";
                     options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
                     options.UserInteraction.LoginUrl = $"{frontendPublicAddress}/signIn";
                     options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/signOut";
