@@ -33,6 +33,13 @@ namespace Chabloom.Accounts.Backend
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
 
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.All;
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
+            });
+
             // Get the public address for the current environment
             var frontendPublicAddress = System.Environment.GetEnvironmentVariable("ACCOUNTS_FRONTEND_ADDRESS");
             var accountsBackendPublicAddress = System.Environment.GetEnvironmentVariable("ACCOUNTS_BACKEND_ADDRESS");
@@ -129,20 +136,13 @@ namespace Chabloom.Accounts.Backend
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseForwardedHeaders();
+
             app.SeedIdentityServer();
 
             app.UseCors();
 
             app.UseIdentityServer();
-
-            var forwardOptions = new ForwardedHeadersOptions
-            {
-                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
-                RequireHeaderSymmetry = false
-            };
-            forwardOptions.KnownNetworks.Clear();
-            forwardOptions.KnownProxies.Clear();
-            app.UseForwardedHeaders();
 
             app.UseRouting();
 
