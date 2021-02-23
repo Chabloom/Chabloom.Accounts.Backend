@@ -56,8 +56,6 @@ namespace Chabloom.Accounts.Backend.Services
                         RedirectUris = new List<string>
                         {
                             $"http://localhost:{clientPort}/signin-oidc",
-                            $"http://{application.ToLower()}-uat-1.chabloom.com/signin-oidc",
-                            $"http://{application.ToLower()}-dev-1.chabloom.com/signin-oidc",
                             $"https://{application.ToLower()}.chabloom.com/signin-oidc",
                             $"https://{application.ToLower()}-uat-1.chabloom.com/signin-oidc",
                             $"https://{application.ToLower()}-dev-1.chabloom.com/signin-oidc"
@@ -65,8 +63,6 @@ namespace Chabloom.Accounts.Backend.Services
                         PostLogoutRedirectUris = new List<string>
                         {
                             $"http://localhost:{clientPort}/signout-oidc",
-                            $"http://{application.ToLower()}-uat-1.chabloom.com/signout-oidc",
-                            $"http://{application.ToLower()}-dev-1.chabloom.com/signout-oidc",
                             $"https://{application.ToLower()}.chabloom.com/signout-oidc",
                             $"https://{application.ToLower()}-uat-1.chabloom.com/signout-oidc",
                             $"https://{application.ToLower()}-dev-1.chabloom.com/signout-oidc"
