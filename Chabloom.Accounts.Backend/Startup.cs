@@ -144,8 +144,6 @@ namespace Chabloom.Accounts.Backend
             forwardOptions.KnownProxies.Clear();
             app.UseForwardedHeaders();
 
-            app.UseHttpsRedirection();
-
             app.UseRouting();
 
             app.UseAuthentication();
