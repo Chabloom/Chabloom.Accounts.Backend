@@ -38,7 +38,7 @@ namespace Chabloom.Accounts.Backend
             if (string.IsNullOrEmpty(frontendPublicAddress) ||
                 string.IsNullOrEmpty(accountsBackendPublicAddress))
             {
-                frontendPublicAddress = "http://localhost:3000";
+                frontendPublicAddress = "https://accounts-dev-1.chabloom.com";
                 accountsBackendPublicAddress = "http://chabloom-accounts-backend";
             }
 
