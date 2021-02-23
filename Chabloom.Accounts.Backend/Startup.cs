@@ -6,6 +6,7 @@ using Chabloom.Accounts.Backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -48,7 +49,6 @@ namespace Chabloom.Accounts.Backend
 
             services.AddIdentityServer(options =>
                 {
-                    options.IssuerUri = "https://accounts-api-dev-1.chabloom.com";
                     options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
                     options.UserInteraction.LoginUrl = $"{frontendPublicAddress}/signIn";
                     options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/signOut";
@@ -134,6 +134,15 @@ namespace Chabloom.Accounts.Backend
             app.UseCors();
 
             app.UseIdentityServer();
+
+            var forwardOptions = new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+                RequireHeaderSymmetry = false
+            };
+            forwardOptions.KnownNetworks.Clear();
+            forwardOptions.KnownProxies.Clear();
+            app.UseForwardedHeaders();
 
             app.UseHttpsRedirection();
 
