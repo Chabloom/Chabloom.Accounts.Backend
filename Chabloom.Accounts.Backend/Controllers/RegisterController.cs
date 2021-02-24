@@ -8,6 +8,7 @@ using IdentityModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Chabloom.Accounts.Backend.Controllers
 {
@@ -20,10 +21,12 @@ namespace Chabloom.Accounts.Backend.Controllers
     [Produces("application/json")]
     public class RegisterController : ControllerBase
     {
+        private readonly ILogger<RegisterController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public RegisterController(UserManager<ApplicationUser> userManager)
+        public RegisterController(ILogger<RegisterController> logger, UserManager<ApplicationUser> userManager)
         {
+            _logger = logger;
             _userManager = userManager;
         }
 
@@ -60,9 +63,13 @@ namespace Chabloom.Accounts.Backend.Controllers
                 return BadRequest(result.Errors);
             }
 
+            _logger.LogInformation($"User with email {viewModel.Email} registered");
+
             // Add the user name claim
             await _userManager.AddClaimAsync(user, new Claim(JwtClaimTypes.Name, viewModel.Name))
                 .ConfigureAwait(false);
+
+            _logger.LogInformation($"User with email {viewModel.Email} added name claim {viewModel.Name}");
 
             // Return success status code
             return Ok();

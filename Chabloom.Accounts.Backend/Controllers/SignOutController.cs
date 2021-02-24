@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Chabloom.Accounts.Backend.Controllers
 {
@@ -21,12 +22,14 @@ namespace Chabloom.Accounts.Backend.Controllers
     public class SignOutController : Controller
     {
         private readonly IIdentityServerInteractionService _interactionService;
+        private readonly ILogger<SignOutController> _logger;
         private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public SignOutController(SignInManager<ApplicationUser> signInManager,
+        public SignOutController(SignInManager<ApplicationUser> signInManager, ILogger<SignOutController> logger,
             IIdentityServerInteractionService interactionService)
         {
             _signInManager = signInManager;
+            _logger = logger;
             _interactionService = interactionService;
         }
 
@@ -39,7 +42,7 @@ namespace Chabloom.Accounts.Backend.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
-        public async Task<ActionResult<SignOutViewModel>> GetSignOut([FromBody] SignOutViewModel viewModel)
+        public async Task<ActionResult<SignOutViewModel>> PostSignOut([FromBody] SignOutViewModel viewModel)
         {
             // Validate the model passed to the endpoint
             if (!ModelState.IsValid || viewModel == null)
@@ -55,9 +58,13 @@ namespace Chabloom.Accounts.Backend.Controllers
             await HttpContext.SignOutAsync()
                 .ConfigureAwait(false);
 
+            _logger.LogInformation($"Sign out id {viewModel.Id} auth cookie removed");
+
             // Sign the user out of the application
             await _signInManager.SignOutAsync()
                 .ConfigureAwait(false);
+
+            _logger.LogInformation($"Sign out id {viewModel.Id} signed out of application");
 
             viewModel.PostLogoutRedirectUri = context.PostLogoutRedirectUri;
 

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Chabloom.Accounts.Backend.Controllers
 {
@@ -20,15 +21,17 @@ namespace Chabloom.Accounts.Backend.Controllers
     public class SignInController : ControllerBase
     {
         private readonly IUserClaimsPrincipalFactory<ApplicationUser> _claimsPrincipalFactory;
+        private readonly ILogger<SignInController> _logger;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
 
 
         public SignInController(IUserClaimsPrincipalFactory<ApplicationUser> claimsPrincipalFactory,
-            UserManager<ApplicationUser> userManager,
+            ILogger<SignInController> logger, UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager)
         {
             _claimsPrincipalFactory = claimsPrincipalFactory;
+            _logger = logger;
             _userManager = userManager;
             _signInManager = signInManager;
         }
@@ -55,6 +58,7 @@ namespace Chabloom.Accounts.Backend.Controllers
                 .ConfigureAwait(false);
             if (user == null)
             {
+                _logger.LogWarning($"Could not find user with email {viewModel.Email}");
                 return Unauthorized();
             }
 
@@ -63,12 +67,16 @@ namespace Chabloom.Accounts.Backend.Controllers
                 .ConfigureAwait(false);
             if (!result.Succeeded)
             {
+                _logger.LogWarning(
+                    $"Password sign in failed. Not allowed: {result.IsNotAllowed}. Locked out: {result.IsLockedOut}");
                 return Unauthorized();
             }
 
             // Sign the user in to the application
             await _signInManager.SignInAsync(user, viewModel.Remember)
                 .ConfigureAwait(false);
+
+            _logger.LogInformation($"User {viewModel.Email} signed in to application");
 
             // Find the user claims principal
             var claimsPrincipal = await _claimsPrincipalFactory.CreateAsync(user)
@@ -77,6 +85,8 @@ namespace Chabloom.Accounts.Backend.Controllers
             // Sign the user in with a cookie
             await HttpContext.SignInAsync(claimsPrincipal)
                 .ConfigureAwait(false);
+
+            _logger.LogInformation($"User {viewModel.Email} auth cookie set");
 
             // Return success status code
             return Ok();
