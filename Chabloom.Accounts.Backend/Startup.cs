@@ -56,7 +56,6 @@ namespace Chabloom.Accounts.Backend
 
             services.AddIdentityServer(options =>
                 {
-                    options.Cors.CorsPolicyName = "Accounts";
                     options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
                     options.UserInteraction.LoginUrl = $"{frontendPublicAddress}/signIn";
                     options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/signOut";
@@ -115,7 +114,7 @@ namespace Chabloom.Accounts.Backend
             // Add the CORS policy
             services.AddCors(options =>
             {
-                options.AddPolicy("Accounts", builder =>
+                options.AddDefaultPolicy(builder =>
                 {
                     builder.WithOrigins(corsOrigins.ToArray());
                     builder.AllowAnyMethod();
@@ -141,7 +140,7 @@ namespace Chabloom.Accounts.Backend
 
             app.SeedIdentityServer();
 
-            app.UseCors("Accounts");
+            app.UseCors();
 
             app.UseIdentityServer();
 
