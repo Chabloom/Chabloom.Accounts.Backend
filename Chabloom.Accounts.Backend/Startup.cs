@@ -1,5 +1,6 @@
 // Copyright 2020-2021 Chabloom LC. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
@@ -56,9 +57,10 @@ namespace Chabloom.Accounts.Backend
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            const string signingKeyPath = "signing/chb-dev-1-vault/cert.pfx";
+            const string signingKeyPath = "signing/cert.pfx";
             if (File.Exists(signingKeyPath))
             {
+                Console.WriteLine("Using signing credential from kubernetes storage");
                 services.AddIdentityServer(options =>
                     {
                         options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
@@ -76,6 +78,7 @@ namespace Chabloom.Accounts.Backend
             }
             else
             {
+                Console.WriteLine("Using developer signing credential");
                 services.AddIdentityServer(options =>
                     {
                         options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
