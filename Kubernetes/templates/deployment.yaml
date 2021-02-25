@@ -54,7 +54,6 @@ spec:
             - mountPath: /app/signing
               name: signing
               readOnly: true
-          volumeMounts:
             - mountPath: /app/keys
               name: keys
               readOnly: false
