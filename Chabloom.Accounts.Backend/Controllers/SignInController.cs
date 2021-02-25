@@ -5,6 +5,7 @@ using Chabloom.Accounts.Backend.Data;
 using Chabloom.Accounts.Backend.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -24,16 +25,18 @@ namespace Chabloom.Accounts.Backend.Controllers
         private readonly ILogger<SignInController> _logger;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
-
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public SignInController(IUserClaimsPrincipalFactory<ApplicationUser> claimsPrincipalFactory,
             ILogger<SignInController> logger, UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager)
+            SignInManager<ApplicationUser> signInManager,
+            IHttpContextAccessor httpContextAccessor)
         {
             _claimsPrincipalFactory = claimsPrincipalFactory;
             _logger = logger;
             _userManager = userManager;
             _signInManager = signInManager;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         /// <summary>
@@ -51,6 +54,14 @@ namespace Chabloom.Accounts.Backend.Controllers
             if (!ModelState.IsValid || viewModel == null)
             {
                 return BadRequest(ModelState);
+            }
+
+            if (_httpContextAccessor.HttpContext != null)
+            {
+                foreach (var (key, value) in _httpContextAccessor.HttpContext.Request.Headers)
+                {
+                    _logger.LogInformation($"{key}: {value}");
+                }
             }
 
             // Find the user by email address
