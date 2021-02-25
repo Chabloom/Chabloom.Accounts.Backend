@@ -9,7 +9,6 @@ using Chabloom.Accounts.Backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -35,13 +34,6 @@ namespace Chabloom.Accounts.Backend
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-
-            services.Configure<ForwardedHeadersOptions>(options =>
-            {
-                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-                options.KnownNetworks.Clear();
-                options.KnownProxies.Clear();
-            });
 
             // Get the public address for the current environment
             var frontendPublicAddress = System.Environment.GetEnvironmentVariable("ACCOUNTS_FRONTEND_ADDRESS");
@@ -161,8 +153,6 @@ namespace Chabloom.Accounts.Backend
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseForwardedHeaders();
 
             app.SeedIdentityServer();
 
