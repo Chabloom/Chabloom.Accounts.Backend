@@ -8,6 +8,7 @@ using Chabloom.Accounts.Backend.Data;
 using Chabloom.Accounts.Backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -62,6 +63,12 @@ namespace Chabloom.Accounts.Backend
             if (File.Exists(signingKeyPath))
             {
                 Console.WriteLine("Using signing credential from kubernetes storage");
+                var signingKeyCert = new X509Certificate2(File.ReadAllBytes(signingKeyPath));
+
+                services.AddDataProtection()
+                    .PersistKeysToFileSystem(new DirectoryInfo("keys"))
+                    .ProtectKeysWithCertificate(signingKeyCert);
+
                 services.AddIdentityServer(options =>
                     {
                         options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
@@ -74,7 +81,7 @@ namespace Chabloom.Accounts.Backend
                     .AddOperationalStore(options => options.ConfigureDbContext = x =>
                         x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
                             y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
-                    .AddSigningCredential(new X509Certificate2(File.ReadAllBytes(signingKeyPath)))
+                    .AddSigningCredential(signingKeyCert)
                     .AddAspNetIdentity<ApplicationUser>();
             }
             else
