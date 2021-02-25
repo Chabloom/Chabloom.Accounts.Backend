@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using StackExchange.Redis;
 
 namespace Chabloom.Accounts.Backend
 {
@@ -44,6 +45,12 @@ namespace Chabloom.Accounts.Backend
                 options.KnownNetworks.Clear();
                 options.KnownProxies.Clear();
             });
+
+            var redisOptions = ConfigurationOptions.Parse("redis-master");
+            redisOptions.Password = "2zxBM3gE0Q";
+            var redis = ConnectionMultiplexer.Connect(redisOptions);
+            services.AddDataProtection()
+                .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys");
 
             // Get the public address for the current environment
             var frontendPublicAddress = System.Environment.GetEnvironmentVariable("ACCOUNTS_FRONTEND_ADDRESS");
