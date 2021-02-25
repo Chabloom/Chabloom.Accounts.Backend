@@ -51,8 +51,8 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            - mountPath: /app/secrets
-              name: secrets
+            - mountPath: /app/signing
+              name: signing
               readOnly: true
       {{- with .Values.nodeSelector }}
       nodeSelector:
