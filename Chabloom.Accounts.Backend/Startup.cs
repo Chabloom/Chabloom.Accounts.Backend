@@ -1,6 +1,8 @@
 // Copyright 2020-2021 Chabloom LC. All rights reserved.
 
 using System.Collections.Generic;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using Chabloom.Accounts.Backend.Data;
 using Chabloom.Accounts.Backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -66,7 +68,7 @@ namespace Chabloom.Accounts.Backend
                 .AddOperationalStore(options => options.ConfigureDbContext = x =>
                     x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
                         y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
-                .AddDeveloperSigningCredential()
+                .AddSigningCredential(new X509Certificate2(File.ReadAllBytes("signing/chb-dev-1-vault/cert.pfx")))
                 .AddAspNetIdentity<ApplicationUser>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

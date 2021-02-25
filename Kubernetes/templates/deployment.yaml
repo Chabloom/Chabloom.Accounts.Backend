@@ -62,3 +62,7 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+        - name: signing
+          secret:
+            secretName: chb-dev-1-vault
