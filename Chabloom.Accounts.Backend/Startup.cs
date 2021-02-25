@@ -64,11 +64,6 @@ namespace Chabloom.Accounts.Backend
             {
                 Console.WriteLine("Using signing credential from kubernetes storage");
                 var signingKeyCert = new X509Certificate2(File.ReadAllBytes(signingKeyPath));
-
-                services.AddDataProtection()
-                    .PersistKeysToFileSystem(new DirectoryInfo("keys"))
-                    .ProtectKeysWithCertificate(signingKeyCert);
-
                 services.AddIdentityServer(options =>
                     {
                         options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
