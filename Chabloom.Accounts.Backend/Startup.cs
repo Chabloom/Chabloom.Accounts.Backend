@@ -56,41 +56,20 @@ namespace Chabloom.Accounts.Backend
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            const string signingKeyPath = "signing/chb-dev-1-vault/cert.pfx";
-            if (File.Exists(signingKeyPath))
-            {
-                services.AddIdentityServer(options =>
-                    {
-                        options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
-                        options.UserInteraction.LoginUrl = $"{frontendPublicAddress}/signIn";
-                        options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/signOut";
-                    })
-                    .AddConfigurationStore(options => options.ConfigureDbContext = x =>
-                        x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
-                            y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
-                    .AddOperationalStore(options => options.ConfigureDbContext = x =>
-                        x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
-                            y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
-                    .AddSigningCredential(new X509Certificate2(File.ReadAllBytes(signingKeyPath)))
-                    .AddAspNetIdentity<ApplicationUser>();
-            }
-            else
-            {
-                services.AddIdentityServer(options =>
-                    {
-                        options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
-                        options.UserInteraction.LoginUrl = $"{frontendPublicAddress}/signIn";
-                        options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/signOut";
-                    })
-                    .AddConfigurationStore(options => options.ConfigureDbContext = x =>
-                        x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
-                            y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
-                    .AddOperationalStore(options => options.ConfigureDbContext = x =>
-                        x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
-                            y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
-                    .AddDeveloperSigningCredential()
-                    .AddAspNetIdentity<ApplicationUser>();
-            }
+            services.AddIdentityServer(options =>
+                {
+                    options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
+                    options.UserInteraction.LoginUrl = $"{frontendPublicAddress}/signIn";
+                    options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/signOut";
+                })
+                .AddConfigurationStore(options => options.ConfigureDbContext = x =>
+                    x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+                        y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
+                .AddOperationalStore(options => options.ConfigureDbContext = x =>
+                    x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+                        y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
+                .AddDeveloperSigningCredential()
+                .AddAspNetIdentity<ApplicationUser>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
