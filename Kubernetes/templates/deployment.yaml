@@ -54,9 +54,6 @@ spec:
             - mountPath: /app/signing
               name: signing
               readOnly: true
-            - mountPath: /app/keys
-              name: keys
-              readOnly: false
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -73,6 +70,3 @@ spec:
         - name: signing
           secret:
             secretName: chb-dev-1-vault
-        - name: keys
-          secret:
-            secretName: chb-dev-1-keys
