@@ -71,6 +71,16 @@ namespace Chabloom.Accounts.Backend.Services
                         RequireClientSecret = false,
                         RequirePkce = true
                     };
+                    // Allow access to accounts backend from other applications
+                    if (application == "Billing" || application == "Transactions" || application == "Ecommerce")
+                    {
+                        client.AllowedScopes.Add("Chabloom.Accounts.Backend");
+                    }
+                    // Allow access to transactions backend from other applications
+                    if (application == "Billing" || application == "Ecommerce")
+                    {
+                        client.AllowedScopes.Add("Chabloom.Transactions.Backend");
+                    }
                     clients.Add(client);
                     ++clientPort;
                 }
