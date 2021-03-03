@@ -50,21 +50,12 @@ namespace Chabloom.Accounts.Backend
             services.AddDataProtection()
                 .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys");
 
-            // Get the public address for the current environment
-            var frontendPublicAddress = System.Environment.GetEnvironmentVariable("ACCOUNTS_FRONTEND_ADDRESS");
-            var accountsBackendPublicAddress = System.Environment.GetEnvironmentVariable("ACCOUNTS_BACKEND_ADDRESS");
-            if (string.IsNullOrEmpty(frontendPublicAddress) ||
-                string.IsNullOrEmpty(accountsBackendPublicAddress))
-            {
-                frontendPublicAddress = "https://accounts-dev-1.chabloom.com";
-                accountsBackendPublicAddress = "https://accounts-api-dev-1.chabloom.com";
-            }
-
             services.AddIdentity<ApplicationUser, ApplicationRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
             const string signingKeyPath = "signing/cert.pfx";
+            const string frontendPublicAddress = "https://accounts-dev-1.chabloom.com";
             if (File.Exists(signingKeyPath))
             {
                 Console.WriteLine("Using signing credential from kubernetes storage");
@@ -113,7 +104,7 @@ namespace Chabloom.Accounts.Backend
                 })
                 .AddJwtBearer(options =>
                 {
-                    options.Authority = accountsBackendPublicAddress;
+                    options.Authority = "https://accounts-api-dev-1.chabloom.com";
                     options.Audience = "Chabloom.Accounts.Backend";
                     options.RequireHttpsMetadata = !Environment.IsDevelopment();
                 });
@@ -131,25 +122,33 @@ namespace Chabloom.Accounts.Backend
             var corsOrigins = new List<string>();
             if (Environment.IsDevelopment())
             {
+                // Allow CORS from accounts DEV, UAT, and local environments
                 corsOrigins.Add("http://localhost:3000");
-                corsOrigins.Add("http://localhost:3001");
-                corsOrigins.Add("http://localhost:3002");
-                corsOrigins.Add("http://localhost:3003");
                 corsOrigins.Add("https://accounts-dev-1.chabloom.com");
                 corsOrigins.Add("https://accounts-uat-1.chabloom.com");
+                // Allow CORS from billing DEV, UAT, and local environments
+                corsOrigins.Add("http://localhost:3001");
                 corsOrigins.Add("https://billing-dev-1.chabloom.com");
                 corsOrigins.Add("https://billing-uat-1.chabloom.com");
-                corsOrigins.Add("https://ecommerce-dev-1.chabloom.com");
-                corsOrigins.Add("https://ecommerce-uat-1.chabloom.com");
+                // Allow CORS from transactions DEV, UAT, and local environments
+                corsOrigins.Add("http://localhost:3002");
                 corsOrigins.Add("https://transactions-dev-1.chabloom.com");
                 corsOrigins.Add("https://transactions-uat-1.chabloom.com");
+                // Allow CORS from ecommerce DEV, UAT, and local environments
+                corsOrigins.Add("http://localhost:3003");
+                corsOrigins.Add("https://ecommerce-dev-1.chabloom.com");
+                corsOrigins.Add("https://ecommerce-uat-1.chabloom.com");
             }
             else
             {
+                // Allow CORS from accounts PROD environment
                 corsOrigins.Add("https://accounts.chabloom.com");
+                // Allow CORS from billing PROD environment
                 corsOrigins.Add("https://billing.chabloom.com");
-                corsOrigins.Add("https://ecommerce.chabloom.com");
+                // Allow CORS from transactions PROD environment
                 corsOrigins.Add("https://transactions.chabloom.com");
+                // Allow CORS from ecommerce PROD environment
+                corsOrigins.Add("https://ecommerce.chabloom.com");
             }
 
             // Add the CORS policy
