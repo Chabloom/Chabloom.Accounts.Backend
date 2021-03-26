@@ -124,18 +124,22 @@ namespace Chabloom.Accounts.Backend
             {
                 // Allow CORS from accounts DEV, UAT, and local environments
                 corsOrigins.Add("http://localhost:3000");
+                corsOrigins.Add("https://localhost:3000");
                 corsOrigins.Add("https://accounts-dev-1.chabloom.com");
                 corsOrigins.Add("https://accounts-uat-1.chabloom.com");
                 // Allow CORS from billing DEV, UAT, and local environments
                 corsOrigins.Add("http://localhost:3001");
+                corsOrigins.Add("https://localhost:3001");
                 corsOrigins.Add("https://billing-dev-1.chabloom.com");
                 corsOrigins.Add("https://billing-uat-1.chabloom.com");
                 // Allow CORS from transactions DEV, UAT, and local environments
                 corsOrigins.Add("http://localhost:3002");
+                corsOrigins.Add("https://localhost:3002");
                 corsOrigins.Add("https://transactions-dev-1.chabloom.com");
                 corsOrigins.Add("https://transactions-uat-1.chabloom.com");
                 // Allow CORS from ecommerce DEV, UAT, and local environments
                 corsOrigins.Add("http://localhost:3003");
+                corsOrigins.Add("https://localhost:3003");
                 corsOrigins.Add("https://ecommerce-dev-1.chabloom.com");
                 corsOrigins.Add("https://ecommerce-uat-1.chabloom.com");
             }
