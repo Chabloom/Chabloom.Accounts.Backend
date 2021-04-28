@@ -46,9 +46,9 @@ namespace Chabloom.Accounts.Backend
                 options.KnownProxies.Clear();
             });
 
-            var redis = ConnectionMultiplexer.Connect("redis-master");
+            /*var redis = ConnectionMultiplexer.Connect("redis-master");
             services.AddDataProtection()
-                .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys");
+                .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys");*/
 
             services.AddIdentity<ApplicationUser, ApplicationRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
