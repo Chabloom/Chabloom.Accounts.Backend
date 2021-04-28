@@ -1,2 +1,2 @@
-docker build -t chbdev1.azurecr.io/chabloom-accounts-backend:1 .
-docker push chbdev1.azurecr.io/chabloom-accounts-backend:1
+docker build -t 10.1.1.11:32000/chabloom-accounts-backend:1 .
+docker push 10.1.1.11:32000/chabloom-accounts-backend:1
