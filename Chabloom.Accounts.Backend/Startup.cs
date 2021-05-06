@@ -54,6 +54,9 @@ namespace Chabloom.Accounts.Backend
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddTransient<EmailSender>();
+            services.AddTransient<SmsSender>();
+
             const string signingKeyPath = "signing/cert.pfx";
             const string frontendPublicAddress = "https://accounts-dev-1.chabloom.com";
             if (File.Exists(signingKeyPath))
