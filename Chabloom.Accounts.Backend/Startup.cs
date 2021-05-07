@@ -1,7 +1,6 @@
 // Copyright 2020-2021 Chabloom LC. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Chabloom.Accounts.Backend.Data;
@@ -23,16 +22,13 @@ namespace Chabloom.Accounts.Backend
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration, IWebHostEnvironment env)
+        public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            Environment = env;
         }
 
         public IConfiguration Configuration { get; }
-        public IWebHostEnvironment Environment { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -46,19 +42,12 @@ namespace Chabloom.Accounts.Backend
                 options.KnownProxies.Clear();
             });
 
-            /*var redis = ConnectionMultiplexer.Connect("redis-master");
-            services.AddDataProtection()
-                .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys");*/
-
             services.AddIdentity<ApplicationUser, ApplicationRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.AddTransient<EmailSender>();
-            services.AddTransient<SmsSender>();
-
             const string signingKeyPath = "signing/cert.pfx";
-            const string frontendPublicAddress = "https://accounts-dev-1.chabloom.com";
+            var frontendPublicAddress = Environment.GetEnvironmentVariable("ACCOUNTS_FRONTEND");
             if (File.Exists(signingKeyPath))
             {
                 Console.WriteLine("Using signing credential from kubernetes storage");
@@ -97,6 +86,17 @@ namespace Chabloom.Accounts.Backend
                     .AddAspNetIdentity<ApplicationUser>();
             }
 
+            var authority = Environment.GetEnvironmentVariable("ACCOUNTS_AUTHORITY");
+            const string audience = "Chabloom.Accounts.Backend";
+
+            var redisConfiguration = Environment.GetEnvironmentVariable("REDIS_CONFIGURATION");
+            if (!string.IsNullOrEmpty(redisConfiguration))
+            {
+                services.AddDataProtection()
+                    .PersistKeysToStackExchangeRedis(ConnectionMultiplexer.Connect(redisConfiguration),
+                        $"{audience}-DataProtection");
+            }
+
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
@@ -107,9 +107,8 @@ namespace Chabloom.Accounts.Backend
                 })
                 .AddJwtBearer(options =>
                 {
-                    options.Authority = "https://accounts-api-dev-1.chabloom.com";
-                    options.Audience = "Chabloom.Accounts.Backend";
-                    options.RequireHttpsMetadata = !Environment.IsDevelopment();
+                    options.Authority = authority;
+                    options.Audience = audience;
                 });
 
             services.AddAuthorization(options =>
@@ -117,65 +116,32 @@ namespace Chabloom.Accounts.Backend
                 options.AddPolicy("ApiScope", policy =>
                 {
                     policy.RequireAuthenticatedUser();
-                    policy.RequireClaim("scope", "Chabloom.Accounts.Backend");
+                    policy.RequireClaim("scope", audience);
                 });
             });
 
-            // Setup CORS origins
-            var corsOrigins = new List<string>();
-            if (Environment.IsDevelopment())
-            {
-                // Allow CORS from accounts DEV, UAT, and local environments
-                corsOrigins.Add("http://localhost:3000");
-                corsOrigins.Add("https://localhost:3000");
-                corsOrigins.Add("https://accounts-dev-1.chabloom.com");
-                corsOrigins.Add("https://accounts-uat-1.chabloom.com");
-                // Allow CORS from billing DEV, UAT, and local environments
-                corsOrigins.Add("http://localhost:3001");
-                corsOrigins.Add("https://localhost:3001");
-                corsOrigins.Add("https://billing-dev-1.chabloom.com");
-                corsOrigins.Add("https://billing-uat-1.chabloom.com");
-                // Allow CORS from transactions DEV, UAT, and local environments
-                corsOrigins.Add("http://localhost:3002");
-                corsOrigins.Add("https://localhost:3002");
-                corsOrigins.Add("https://transactions-dev-1.chabloom.com");
-                corsOrigins.Add("https://transactions-uat-1.chabloom.com");
-                // Allow CORS from ecommerce DEV, UAT, and local environments
-                corsOrigins.Add("http://localhost:3003");
-                corsOrigins.Add("https://localhost:3003");
-                corsOrigins.Add("https://ecommerce-dev-1.chabloom.com");
-                corsOrigins.Add("https://ecommerce-uat-1.chabloom.com");
-            }
-            else
-            {
-                // Allow CORS from accounts PROD environment
-                corsOrigins.Add("https://accounts.chabloom.com");
-                // Allow CORS from billing PROD environment
-                corsOrigins.Add("https://billing.chabloom.com");
-                // Allow CORS from transactions PROD environment
-                corsOrigins.Add("https://transactions.chabloom.com");
-                // Allow CORS from ecommerce PROD environment
-                corsOrigins.Add("https://ecommerce.chabloom.com");
-            }
+            services.AddTransient<EmailSender>();
+            services.AddTransient<SmsSender>();
 
-            // Add the CORS policy
-            services.AddCors(options =>
+            // Load CORS origins
+            var corsOrigins = Environment.GetEnvironmentVariable("CORS_ORIGINS");
+            if (!string.IsNullOrEmpty(corsOrigins))
             {
-                options.AddDefaultPolicy(builder =>
+                services.AddCors(options =>
                 {
-                    builder.WithOrigins(corsOrigins.ToArray());
-                    builder.AllowAnyMethod();
-                    builder.AllowAnyHeader();
-                    builder.AllowCredentials();
+                    options.AddDefaultPolicy(builder =>
+                    {
+                        builder.WithOrigins(corsOrigins.Split(';'));
+                        builder.AllowAnyMethod();
+                        builder.AllowAnyHeader();
+                        builder.AllowCredentials();
+                    });
                 });
-            });
-
-            services.AddApplicationInsightsTelemetry();
+            }
 
             services.AddControllers();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())

@@ -18,9 +18,8 @@ namespace Chabloom.Accounts.Backend
             return Host.CreateDefaultBuilder(args)
                 .ConfigureLogging(logging =>
                 {
-                    logging.AddApplicationInsights();
-                    logging.AddAzureWebAppDiagnostics();
                     logging.AddConsole();
+                    logging.AddDebug();
                 })
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
         }
