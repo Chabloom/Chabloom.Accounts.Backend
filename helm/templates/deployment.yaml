@@ -32,6 +32,14 @@ spec:
           env:
             - name: ASPNETCORE_ENVIRONMENT
               value: {{ .Values.aspnetcoreEnvironment }}
+            - name: ACCOUNTS_AUTHORITY
+              value: {{ .Values.accountsAuthority }}
+            - name: ACCOUNTS_FRONTEND
+              value: {{ .Values.accountsFrontend }}
+            - name: CORS_ORIGINS
+              value: {{ .Values.corsOrigins }}
+            - name: REDIS_CONFIGURATION
+              value: {{ .Values.redisConfiguration }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"

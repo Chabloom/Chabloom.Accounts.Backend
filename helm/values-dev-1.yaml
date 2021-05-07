@@ -88,3 +88,7 @@ tolerations: []
 affinity: {}
 
 aspnetcoreEnvironment: Development
+accountsAuthority: "https://accounts-api-dev-1.chabloom.com"
+accountsFrontend: "https://accounts-dev-1.chabloom.com"
+corsOrigins: "https://localhost:3000;https://localhost:3001;https://localhost:3002;https://localhost:3003;https://accounts-uat-1.chabloom.com;https://billing-uat-1.chabloom.com;https://ecommerce-uat-1.chabloom.com;https://transactions-uat-1.chabloom.com"
+redisConfiguration: "redis-master"
