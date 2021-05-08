@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: chb-dev-1.chabloom.com:32000/chabloom-accounts-backend
+  repository: mdcasey/chabloom-accounts-backend
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
