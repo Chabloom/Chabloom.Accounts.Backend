@@ -47,7 +47,7 @@ namespace Chabloom.Accounts.Backend
                 .AddDefaultTokenProviders();
 
             const string signingKeyPath = "signing/cert.pfx";
-            var frontendPublicAddress = Environment.GetEnvironmentVariable("ACCOUNTS_FRONTEND");
+            var frontendPublicAddress = Environment.GetEnvironmentVariable("ACCOUNTS_FRONTEND_ADDRESS");
             if (File.Exists(signingKeyPath))
             {
                 Console.WriteLine("Using signing credential from kubernetes storage");
@@ -86,7 +86,6 @@ namespace Chabloom.Accounts.Backend
                     .AddAspNetIdentity<ApplicationUser>();
             }
 
-            var authority = Environment.GetEnvironmentVariable("ACCOUNTS_AUTHORITY");
             const string audience = "Chabloom.Accounts.Backend";
 
             var redisConfiguration = Environment.GetEnvironmentVariable("REDIS_CONFIGURATION");
@@ -107,7 +106,7 @@ namespace Chabloom.Accounts.Backend
                 })
                 .AddJwtBearer(options =>
                 {
-                    options.Authority = authority;
+                    options.Authority = Environment.GetEnvironmentVariable("ACCOUNTS_BACKEND_ADDRESS");
                     options.Audience = audience;
                 });
 
@@ -124,20 +123,23 @@ namespace Chabloom.Accounts.Backend
             services.AddTransient<SmsSender>();
 
             // Load CORS origins
-            var corsOrigins = Environment.GetEnvironmentVariable("CORS_ORIGINS");
-            if (!string.IsNullOrEmpty(corsOrigins))
+            services.AddCors(options =>
             {
-                services.AddCors(options =>
+                options.AddDefaultPolicy(builder =>
                 {
-                    options.AddDefaultPolicy(builder =>
+                    var origins = new[]
                     {
-                        builder.WithOrigins(corsOrigins.Split(';'));
-                        builder.AllowAnyMethod();
-                        builder.AllowAnyHeader();
-                        builder.AllowCredentials();
-                    });
+                        Environment.GetEnvironmentVariable("ACCOUNTS_FRONTEND_ADDRESS"),
+                        Environment.GetEnvironmentVariable("BILLING_FRONTEND_ADDRESS"),
+                        Environment.GetEnvironmentVariable("ECOMMERCE_FRONTEND_ADDRESS"),
+                        Environment.GetEnvironmentVariable("TRANSACTIONS_FRONTEND_ADDRESS")
+                    };
+                    builder.WithOrigins(origins);
+                    builder.AllowAnyMethod();
+                    builder.AllowAnyHeader();
+                    builder.AllowCredentials();
                 });
-            }
+            });
 
             services.AddControllers();
         }

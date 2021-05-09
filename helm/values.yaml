@@ -89,7 +89,12 @@ tolerations: []
 affinity: {}
 
 aspnetcoreEnvironment: Production
-accountsAuthority: "https://accounts-api.chabloom.com"
-accountsFrontend: "https://accounts.chabloom.com"
-corsOrigins: "https://accounts.chabloom.com;https://billing.chabloom.com;https://ecommerce.chabloom.com;https://transactions.chabloom.com"
 redisConfiguration: "redis-master"
+accountsFrontendAddress: https://accounts.chabloom.com
+billingFrontendAddress: https://billing.chabloom.com
+ecommerceFrontendAddress: https://ecommerce.chabloom.com
+transactionsFrontendAddress: https://transactions.chabloom.com
+accountsBackendAddress: https://accounts-api.chabloom.com
+billingBackendAddress: https://billing-api.chabloom.com
+ecommerceBackendAddress: https://ecommerce-api.chabloom.com
+transactionsBackendAddress: https://transactions-api.chabloom.com
