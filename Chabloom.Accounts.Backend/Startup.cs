@@ -32,7 +32,7 @@ namespace Chabloom.Accounts.Backend
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<AccountsDbContext>(options =>
-                options.UseSqlServer(
+                options.UseNpgsql(
                     Configuration.GetConnectionString("DefaultConnection")));
 
             services.Configure<ForwardedHeadersOptions>(options =>
@@ -59,10 +59,10 @@ namespace Chabloom.Accounts.Backend
                         options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/signOut";
                     })
                     .AddConfigurationStore(options => options.ConfigureDbContext = x =>
-                        x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+                        x.UseNpgsql(Configuration.GetConnectionString("ConfigurationConnection"),
                             y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
                     .AddOperationalStore(options => options.ConfigureDbContext = x =>
-                        x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+                        x.UseNpgsql(Configuration.GetConnectionString("OperationConnection"),
                             y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
                     .AddSigningCredential(signingKeyCert)
                     .AddAspNetIdentity<ApplicationUser>();
@@ -77,10 +77,10 @@ namespace Chabloom.Accounts.Backend
                         options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/signOut";
                     })
                     .AddConfigurationStore(options => options.ConfigureDbContext = x =>
-                        x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+                        x.UseNpgsql(Configuration.GetConnectionString("ConfigurationConnection"),
                             y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
                     .AddOperationalStore(options => options.ConfigureDbContext = x =>
-                        x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+                        x.UseNpgsql(Configuration.GetConnectionString("OperationConnection"),
                             y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
                     .AddDeveloperSigningCredential()
                     .AddAspNetIdentity<ApplicationUser>();
