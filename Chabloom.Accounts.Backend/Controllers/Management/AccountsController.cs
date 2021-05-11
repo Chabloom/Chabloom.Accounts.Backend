@@ -20,13 +20,13 @@ namespace Chabloom.Accounts.Backend.Controllers.Management
     [Produces("application/json")]
     public class AccountsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AccountsDbContext _context;
         private readonly EmailSender _emailSender;
         private readonly ILogger<AccountsController> _logger;
         private readonly SmsSender _smsSender;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public AccountsController(ApplicationDbContext context, EmailSender emailSender,
+        public AccountsController(AccountsDbContext context, EmailSender emailSender,
             ILogger<AccountsController> logger, SmsSender smsSender, UserManager<ApplicationUser> userManager)
         {
             _context = context;

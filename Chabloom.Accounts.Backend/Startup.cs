@@ -31,7 +31,7 @@ namespace Chabloom.Accounts.Backend
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
+            services.AddDbContext<AccountsDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
 
@@ -43,7 +43,7 @@ namespace Chabloom.Accounts.Backend
             });
 
             services.AddIdentity<ApplicationUser, ApplicationRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddEntityFrameworkStores<AccountsDbContext>()
                 .AddDefaultTokenProviders();
 
             const string signingKeyPath = "signing/cert.pfx";

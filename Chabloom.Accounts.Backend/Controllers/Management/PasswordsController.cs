@@ -18,12 +18,12 @@ namespace Chabloom.Accounts.Backend.Controllers.Management
     [Produces("application/json")]
     public class PasswordsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AccountsDbContext _context;
         private readonly EmailSender _emailSender;
         private readonly ILogger<PasswordsController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public PasswordsController(ApplicationDbContext context, EmailSender emailSender,
+        public PasswordsController(AccountsDbContext context, EmailSender emailSender,
             ILogger<PasswordsController> logger,
             UserManager<ApplicationUser> userManager)
         {
