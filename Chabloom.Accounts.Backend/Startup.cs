@@ -127,14 +127,21 @@ namespace Chabloom.Accounts.Backend
             {
                 options.AddDefaultPolicy(builder =>
                 {
-                    var origins = new[]
+                    var origins = new List<string>
                     {
                         Environment.GetEnvironmentVariable("ACCOUNTS_FRONTEND_ADDRESS"),
                         Environment.GetEnvironmentVariable("BILLING_FRONTEND_ADDRESS"),
                         Environment.GetEnvironmentVariable("ECOMMERCE_FRONTEND_ADDRESS"),
                         Environment.GetEnvironmentVariable("TRANSACTIONS_FRONTEND_ADDRESS")
                     };
-                    builder.WithOrigins(origins);
+                    if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+                    {
+                        origins.Add("https://localhost:3000");
+                        origins.Add("https://localhost:3001");
+                        origins.Add("https://localhost:3002");
+                        origins.Add("https://localhost:3003");
+                    }
+                    builder.WithOrigins(origins.ToArray());
                     builder.AllowAnyMethod();
                     builder.AllowAnyHeader();
                     builder.AllowCredentials();
