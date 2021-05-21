@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Chabloom.Accounts.Backend.Data;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.Models;
@@ -158,8 +159,8 @@ namespace Chabloom.Accounts.Backend.Services
                 return;
             }
 
-            var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
+            var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var user = userManager.FindByEmailAsync("mdcasey@chabloom.com").Result;
             foreach (var application in Applications)
             {
@@ -167,7 +168,7 @@ namespace Chabloom.Accounts.Backend.Services
                 var managerRole = roleManager.FindByNameAsync(managerRoleName).Result;
                 if (managerRole == null)
                 {
-                    managerRole = new IdentityRole(managerRoleName);
+                    managerRole = new ApplicationRole(managerRoleName);
                     _ = roleManager.CreateAsync(managerRole).Result;
                 }
 
@@ -175,7 +176,7 @@ namespace Chabloom.Accounts.Backend.Services
                 var adminRole = roleManager.FindByNameAsync(adminRoleName).Result;
                 if (adminRole == null)
                 {
-                    adminRole = new IdentityRole(adminRoleName);
+                    adminRole = new ApplicationRole(adminRoleName);
                     _ = roleManager.CreateAsync(adminRole).Result;
                 }
 

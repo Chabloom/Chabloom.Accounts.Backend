@@ -46,8 +46,7 @@ namespace Chabloom.Accounts.Backend
 
             services.AddIdentity<ApplicationUser, ApplicationRole>()
                 .AddEntityFrameworkStores<AccountsDbContext>()
-                .AddDefaultTokenProviders()
-                .AddRoles<ApplicationRole>();
+                .AddDefaultTokenProviders();
 
             const string signingKeyPath = "signing/cert.pfx";
             var frontendPublicAddress = Environment.GetEnvironmentVariable("ACCOUNTS_FRONTEND_ADDRESS");
