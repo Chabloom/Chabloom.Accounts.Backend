@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Chabloom.Accounts.Backend.Data;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
@@ -153,6 +154,11 @@ namespace Chabloom.Accounts.Backend.Services
 
         public static void SeedRoles(this IApplicationBuilder app)
         {
+            SeedRolesAsync(app).Wait();
+        }
+
+        private static async Task SeedRolesAsync(this IApplicationBuilder app)
+        {
             using var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>()?.CreateScope();
             if (serviceScope == null)
             {
@@ -161,23 +167,23 @@ namespace Chabloom.Accounts.Backend.Services
 
             var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
             var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            var user = userManager.FindByEmailAsync("mdcasey@chabloom.com").Result;
+            var user = await userManager.FindByEmailAsync("mdcasey@chabloom.com");
             foreach (var application in Applications)
             {
                 var managerRoleName = $"Chabloom.{application}.Manager";
-                var managerRole = roleManager.FindByNameAsync(managerRoleName).Result;
+                var managerRole = await roleManager.FindByNameAsync(managerRoleName);
                 if (managerRole == null)
                 {
                     managerRole = new ApplicationRole(managerRoleName);
-                    _ = roleManager.CreateAsync(managerRole).Result;
+                    await roleManager.CreateAsync(managerRole);
                 }
 
                 var adminRoleName = $"Chabloom.{application}.Administrator";
-                var adminRole = roleManager.FindByNameAsync(adminRoleName).Result;
+                var adminRole = await roleManager.FindByNameAsync(adminRoleName);
                 if (adminRole == null)
                 {
                     adminRole = new ApplicationRole(adminRoleName);
-                    _ = roleManager.CreateAsync(adminRole).Result;
+                    await roleManager.CreateAsync(adminRole);
                 }
 
                 if (user == null)
@@ -185,14 +191,14 @@ namespace Chabloom.Accounts.Backend.Services
                     continue;
                 }
 
-                if (!userManager.IsInRoleAsync(user, managerRoleName).Result)
+                if (!await userManager.IsInRoleAsync(user, managerRoleName))
                 {
-                    _ = userManager.AddToRoleAsync(user, managerRoleName);
+                    await userManager.AddToRoleAsync(user, managerRoleName);
                 }
 
-                if (!userManager.IsInRoleAsync(user, adminRoleName).Result)
+                if (!await userManager.IsInRoleAsync(user, adminRoleName))
                 {
-                    _ = userManager.AddToRoleAsync(user, adminRoleName);
+                    await userManager.AddToRoleAsync(user, adminRoleName);
                 }
             }
         }
