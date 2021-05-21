@@ -6,7 +6,6 @@ using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Chabloom.Accounts.Backend.Data;
 using Chabloom.Accounts.Backend.Services;
-using IdentityModel;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -47,7 +46,8 @@ namespace Chabloom.Accounts.Backend
 
             services.AddIdentity<ApplicationUser, ApplicationRole>()
                 .AddEntityFrameworkStores<AccountsDbContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddRoles<ApplicationRole>();
 
             const string signingKeyPath = "signing/cert.pfx";
             var frontendPublicAddress = Environment.GetEnvironmentVariable("ACCOUNTS_FRONTEND_ADDRESS");
@@ -145,6 +145,7 @@ namespace Chabloom.Accounts.Backend
                         origins.Add("https://localhost:3002");
                         origins.Add("https://localhost:3003");
                     }
+
                     builder.WithOrigins(origins.ToArray());
                     builder.AllowAnyMethod();
                     builder.AllowAnyHeader();
