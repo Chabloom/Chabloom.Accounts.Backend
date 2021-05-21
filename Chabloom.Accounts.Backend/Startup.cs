@@ -118,7 +118,7 @@ namespace Chabloom.Accounts.Backend
                 options.AddPolicy("ApiScope", policy =>
                 {
                     policy.RequireAuthenticatedUser();
-                    policy.RequireClaim(JwtClaimTypes.Scope, audience);
+                    policy.RequireClaim("scope", audience);
                 });
             });
 
