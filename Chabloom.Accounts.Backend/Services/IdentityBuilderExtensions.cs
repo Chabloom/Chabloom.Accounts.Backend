@@ -6,6 +6,7 @@ using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.Models;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -78,11 +79,13 @@ namespace Chabloom.Accounts.Backend.Services
                     {
                         client.AllowedScopes.Add("Chabloom.Accounts.Backend");
                     }
+
                     // Allow access to transactions backend from other applications
                     if (application == "Billing" || application == "Ecommerce")
                     {
                         client.AllowedScopes.Add("Chabloom.Transactions.Backend");
                     }
+
                     clients.Add(client);
                     ++clientPort;
                 }
@@ -144,6 +147,52 @@ namespace Chabloom.Accounts.Backend.Services
                 // Add API resource entities to database
                 context.ApiResources.AddRange(apiResourceEntities);
                 context.SaveChanges();
+            }
+        }
+
+        public static void SeedRoles(this IApplicationBuilder app)
+        {
+            using var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>()?.CreateScope();
+            if (serviceScope == null)
+            {
+                return;
+            }
+
+            var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var user = userManager.FindByEmailAsync("mdcasey@chabloom.com").Result;
+            foreach (var application in Applications)
+            {
+                var managerRoleName = $"Chabloom.{application}.Manager";
+                var managerRole = roleManager.FindByNameAsync(managerRoleName).Result;
+                if (managerRole == null)
+                {
+                    managerRole = new IdentityRole(managerRoleName);
+                    _ = roleManager.CreateAsync(managerRole).Result;
+                }
+
+                var adminRoleName = $"Chabloom.{application}.Administrator";
+                var adminRole = roleManager.FindByNameAsync(adminRoleName).Result;
+                if (adminRole == null)
+                {
+                    adminRole = new IdentityRole(adminRoleName);
+                    _ = roleManager.CreateAsync(adminRole).Result;
+                }
+
+                if (user == null)
+                {
+                    continue;
+                }
+
+                if (!userManager.IsInRoleAsync(user, managerRoleName).Result)
+                {
+                    _ = userManager.AddToRoleAsync(user, managerRoleName);
+                }
+
+                if (!userManager.IsInRoleAsync(user, adminRoleName).Result)
+                {
+                    _ = userManager.AddToRoleAsync(user, adminRoleName);
+                }
             }
         }
     }

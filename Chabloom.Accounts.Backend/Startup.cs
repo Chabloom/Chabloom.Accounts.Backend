@@ -6,6 +6,8 @@ using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Chabloom.Accounts.Backend.Data;
 using Chabloom.Accounts.Backend.Services;
+using IdentityModel;
+using IdentityServer4.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -116,10 +118,11 @@ namespace Chabloom.Accounts.Backend
                 options.AddPolicy("ApiScope", policy =>
                 {
                     policy.RequireAuthenticatedUser();
-                    policy.RequireClaim("scope", audience);
+                    policy.RequireClaim(JwtClaimTypes.Scope, audience);
                 });
             });
 
+            services.AddScoped<IProfileService, ProfileService>();
             services.AddTransient<EmailSender>();
             services.AddTransient<SmsSender>();
 
@@ -162,6 +165,7 @@ namespace Chabloom.Accounts.Backend
             app.UseForwardedHeaders();
 
             app.SeedIdentityServer();
+            app.SeedRoles();
 
             app.UseCors();
 
