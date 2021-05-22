@@ -50,7 +50,14 @@ namespace Chabloom.Accounts.Backend.Data
                     UserId = users[0].Id,
                     ClaimType = JwtClaimTypes.Name,
                     ClaimValue = "Matthew Casey"
-                }
+                },
+                new()
+                {
+                    Id = 2,
+                    UserId = users[0].Id,
+                    ClaimType = JwtClaimTypes.Role,
+                    ClaimValue = "Chabloom.Global.Admin"
+                },
             };
 
             modelBuilder.Entity<IdentityUserClaim<Guid>>()
