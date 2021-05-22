@@ -2,13 +2,10 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Chabloom.Accounts.Backend.Data;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.Models;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -149,57 +146,6 @@ namespace Chabloom.Accounts.Backend.Services
                 // Add API resource entities to database
                 context.ApiResources.AddRange(apiResourceEntities);
                 context.SaveChanges();
-            }
-        }
-
-        public static void SeedRoles(this IApplicationBuilder app)
-        {
-            SeedRolesAsync(app).Wait();
-        }
-
-        private static async Task SeedRolesAsync(this IApplicationBuilder app)
-        {
-            using var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>()?.CreateScope();
-            if (serviceScope == null)
-            {
-                return;
-            }
-
-            var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
-            var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            var user = await userManager.FindByEmailAsync("mdcasey@chabloom.com");
-            foreach (var application in Applications)
-            {
-                var managerRoleName = $"Chabloom.{application}.Manager";
-                var managerRole = await roleManager.FindByNameAsync(managerRoleName);
-                if (managerRole == null)
-                {
-                    managerRole = new ApplicationRole(managerRoleName);
-                    await roleManager.CreateAsync(managerRole);
-                }
-
-                var adminRoleName = $"Chabloom.{application}.Administrator";
-                var adminRole = await roleManager.FindByNameAsync(adminRoleName);
-                if (adminRole == null)
-                {
-                    adminRole = new ApplicationRole(adminRoleName);
-                    await roleManager.CreateAsync(adminRole);
-                }
-
-                if (user == null)
-                {
-                    continue;
-                }
-
-                if (!await userManager.IsInRoleAsync(user, managerRoleName))
-                {
-                    await userManager.AddToRoleAsync(user, managerRoleName);
-                }
-
-                if (!await userManager.IsInRoleAsync(user, adminRoleName))
-                {
-                    await userManager.AddToRoleAsync(user, adminRoleName);
-                }
             }
         }
     }

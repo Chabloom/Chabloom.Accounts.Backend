@@ -6,7 +6,6 @@ using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Chabloom.Accounts.Backend.Data;
 using Chabloom.Accounts.Backend.Services;
-using IdentityServer4.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -121,7 +120,6 @@ namespace Chabloom.Accounts.Backend
                 });
             });
 
-            services.AddScoped<IProfileService, ProfileService>();
             services.AddTransient<EmailSender>();
             services.AddTransient<SmsSender>();
 
@@ -165,7 +163,6 @@ namespace Chabloom.Accounts.Backend
             app.UseForwardedHeaders();
 
             app.SeedIdentityServer();
-            app.SeedRoles();
 
             app.UseCors();
 
