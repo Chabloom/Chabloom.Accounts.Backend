@@ -47,44 +47,32 @@ namespace Chabloom.Accounts.Backend
                 .AddEntityFrameworkStores<AccountsDbContext>()
                 .AddDefaultTokenProviders();
 
-            const string signingKeyPath = "signing/cert.pfx";
             var frontendPublicAddress = Environment.GetEnvironmentVariable("ACCOUNTS_FRONTEND_ADDRESS");
+            var identityServerBuilder = services.AddIdentityServer(options =>
+                {
+                    options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
+                    options.UserInteraction.LoginUrl = $"{frontendPublicAddress}/signIn";
+                    options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/signOut";
+                })
+                .AddConfigurationStore(options => options.ConfigureDbContext = x =>
+                    x.UseNpgsql(Configuration.GetConnectionString("ConfigurationConnection"),
+                        y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
+                .AddOperationalStore(options => options.ConfigureDbContext = x =>
+                    x.UseNpgsql(Configuration.GetConnectionString("OperationConnection"),
+                        y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
+                .AddAspNetIdentity<ApplicationUser>();
+
+            const string signingKeyPath = "signing/cert.pfx";
             if (File.Exists(signingKeyPath))
             {
                 Console.WriteLine("Using signing credential from kubernetes storage");
                 var signingKeyCert = new X509Certificate2(File.ReadAllBytes(signingKeyPath));
-                services.AddIdentityServer(options =>
-                    {
-                        options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
-                        options.UserInteraction.LoginUrl = $"{frontendPublicAddress}/signIn";
-                        options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/signOut";
-                    })
-                    .AddConfigurationStore(options => options.ConfigureDbContext = x =>
-                        x.UseNpgsql(Configuration.GetConnectionString("ConfigurationConnection"),
-                            y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
-                    .AddOperationalStore(options => options.ConfigureDbContext = x =>
-                        x.UseNpgsql(Configuration.GetConnectionString("OperationConnection"),
-                            y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
-                    .AddSigningCredential(signingKeyCert)
-                    .AddAspNetIdentity<ApplicationUser>();
+                identityServerBuilder.AddSigningCredential(signingKeyCert);
             }
             else
             {
                 Console.WriteLine("Using developer signing credential");
-                services.AddIdentityServer(options =>
-                    {
-                        options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
-                        options.UserInteraction.LoginUrl = $"{frontendPublicAddress}/signIn";
-                        options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/signOut";
-                    })
-                    .AddConfigurationStore(options => options.ConfigureDbContext = x =>
-                        x.UseNpgsql(Configuration.GetConnectionString("ConfigurationConnection"),
-                            y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
-                    .AddOperationalStore(options => options.ConfigureDbContext = x =>
-                        x.UseNpgsql(Configuration.GetConnectionString("OperationConnection"),
-                            y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
-                    .AddDeveloperSigningCredential()
-                    .AddAspNetIdentity<ApplicationUser>();
+                identityServerBuilder.AddDeveloperSigningCredential();
             }
 
             const string audience = "Chabloom.Accounts.Backend";
