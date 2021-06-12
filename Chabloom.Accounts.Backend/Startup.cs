@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using Azure.Identity;
 using Chabloom.Accounts.Backend.Data;
 using Chabloom.Accounts.Backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -30,6 +32,16 @@ namespace Chabloom.Accounts.Backend
 
         public void ConfigureServices(IServiceCollection services)
         {
+            var vaultAddress = Environment.GetEnvironmentVariable("AZURE_VAULT_ADDRESS");
+            if (!string.IsNullOrEmpty(vaultAddress))
+            {
+                services.AddAzureClients(builder =>
+                {
+                    builder.AddSecretClient(new Uri(vaultAddress));
+                    builder.UseCredential(new DefaultAzureCredential());
+                });
+            }
+
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(
                     Configuration.GetConnectionString("DefaultConnection")));
