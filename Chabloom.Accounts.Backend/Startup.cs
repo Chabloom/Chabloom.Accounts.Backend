@@ -9,6 +9,7 @@ using Chabloom.Accounts.Backend.Data;
 using Chabloom.Accounts.Backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -40,6 +41,10 @@ namespace Chabloom.Accounts.Backend
                     builder.AddSecretClient(new Uri(vaultAddress));
                     builder.UseCredential(new DefaultAzureCredential());
                 });
+
+                services
+                    .AddDataProtection()
+                    .ProtectKeysWithAzureKeyVault(new Uri("key-accounts"), new DefaultAzureCredential());
             }
 
             services.AddDbContext<ApplicationDbContext>(options =>
