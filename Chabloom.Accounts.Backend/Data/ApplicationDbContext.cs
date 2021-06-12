@@ -9,9 +9,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Chabloom.Accounts.Backend.Data
 {
-    public class AccountsDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
     {
-        public AccountsDbContext(DbContextOptions<AccountsDbContext> options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
         }
@@ -19,6 +19,28 @@ namespace Chabloom.Accounts.Backend.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            #region Auth tables
+
+            modelBuilder.Entity<ApplicationUser>()
+                .ToTable("Users");
+            ;
+            modelBuilder.Entity<ApplicationRole>()
+                .ToTable("Roles");
+            modelBuilder.Entity<IdentityUserClaim<Guid>>()
+                .ToTable("UserClaims");
+            modelBuilder.Entity<IdentityUserLogin<Guid>>()
+                .ToTable("UserLogins");
+            modelBuilder.Entity<IdentityUserRole<Guid>>()
+                .ToTable("UserRoles");
+            modelBuilder.Entity<IdentityUserToken<Guid>>()
+                .ToTable("UserTokens");
+            modelBuilder.Entity<IdentityRoleClaim<Guid>>()
+                .ToTable("RoleClaims");
+
+            #endregion
+
+            #region Auth data
 
             var users = new List<ApplicationUser>
             {
@@ -50,18 +72,13 @@ namespace Chabloom.Accounts.Backend.Data
                     UserId = users[0].Id,
                     ClaimType = JwtClaimTypes.Name,
                     ClaimValue = "Matthew Casey"
-                },
-                new()
-                {
-                    Id = 2,
-                    UserId = users[0].Id,
-                    ClaimType = JwtClaimTypes.Role,
-                    ClaimValue = "Chabloom.Global.Admin"
-                },
+                }
             };
 
             modelBuilder.Entity<IdentityUserClaim<Guid>>()
                 .HasData(userClaims);
+
+            #endregion
         }
     }
 }

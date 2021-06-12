@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Chabloom.Accounts.Backend.Data.Migrations.PersistedGrantDb
+namespace Chabloom.Accounts.Backend.Data.Migrations.Operation
 {
-    public partial class PersistedGrantDbMigration1 : Migration
+    public partial class OperationMigration1 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Chabloom.Accounts.Backend.Data;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.Models;
@@ -31,8 +32,15 @@ namespace Chabloom.Accounts.Backend.Services
                 return;
             }
 
-            serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>().Database.Migrate();
-            serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
+            serviceScope.ServiceProvider
+                .GetRequiredService<ApplicationDbContext>().Database
+                .Migrate();
+            serviceScope.ServiceProvider
+                .GetRequiredService<ConfigurationDbContext>().Database
+                .Migrate();
+            serviceScope.ServiceProvider
+                .GetRequiredService<PersistedGrantDbContext>().Database
+                .Migrate();
 
             var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
             if (!context.Clients.Any())

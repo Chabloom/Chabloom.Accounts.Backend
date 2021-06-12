@@ -7,18 +7,18 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace Chabloom.Accounts.Backend.Data.Migrations.PersistedGrantDb
+namespace Chabloom.Accounts.Backend.Data.Migrations.Operation
 {
     [DbContext(typeof(PersistedGrantDbContext))]
-    [Migration("20210522032916_PersistedGrantDbMigration2")]
-    partial class PersistedGrantDbMigration2
+    [Migration("20210612045156_OperationMigration1")]
+    partial class OperationMigration1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.6")
+                .HasAnnotation("ProductVersion", "5.0.7")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
             modelBuilder.Entity("IdentityServer4.EntityFramework.Entities.DeviceFlowCodes", b =>

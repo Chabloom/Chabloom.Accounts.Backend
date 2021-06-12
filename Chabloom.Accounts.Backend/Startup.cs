@@ -8,7 +8,6 @@ using Chabloom.Accounts.Backend.Data;
 using Chabloom.Accounts.Backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -17,7 +16,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using StackExchange.Redis;
 
 namespace Chabloom.Accounts.Backend
 {
@@ -32,7 +30,7 @@ namespace Chabloom.Accounts.Backend
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<AccountsDbContext>(options =>
+            services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(
                     Configuration.GetConnectionString("DefaultConnection")));
 
@@ -44,45 +42,35 @@ namespace Chabloom.Accounts.Backend
             });
 
             services.AddIdentity<ApplicationUser, ApplicationRole>()
-                .AddEntityFrameworkStores<AccountsDbContext>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+
+            const string audience = "Chabloom.Accounts.Backend";
 
             var frontendPublicAddress = Environment.GetEnvironmentVariable("ACCOUNTS_FRONTEND_ADDRESS");
             var identityServerBuilder = services.AddIdentityServer(options =>
                 {
-                    options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/error";
-                    options.UserInteraction.LoginUrl = $"{frontendPublicAddress}/signIn";
-                    options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/signOut";
+                    options.UserInteraction.ErrorUrl = $"{frontendPublicAddress}/account/error";
+                    options.UserInteraction.LoginUrl = $"{frontendPublicAddress}/account/signIn";
+                    options.UserInteraction.LogoutUrl = $"{frontendPublicAddress}/account/signOut";
                 })
                 .AddConfigurationStore(options => options.ConfigureDbContext = x =>
                     x.UseNpgsql(Configuration.GetConnectionString("ConfigurationConnection"),
-                        y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
+                        y => y.MigrationsAssembly(audience)))
                 .AddOperationalStore(options => options.ConfigureDbContext = x =>
                     x.UseNpgsql(Configuration.GetConnectionString("OperationConnection"),
-                        y => y.MigrationsAssembly("Chabloom.Accounts.Backend")))
+                        y => y.MigrationsAssembly(audience)))
                 .AddAspNetIdentity<ApplicationUser>();
 
             const string signingKeyPath = "signing/cert.pfx";
             if (File.Exists(signingKeyPath))
             {
-                Console.WriteLine("Using signing credential from kubernetes storage");
                 var signingKeyCert = new X509Certificate2(File.ReadAllBytes(signingKeyPath));
                 identityServerBuilder.AddSigningCredential(signingKeyCert);
             }
             else
             {
-                Console.WriteLine("Using developer signing credential");
                 identityServerBuilder.AddDeveloperSigningCredential();
-            }
-
-            const string audience = "Chabloom.Accounts.Backend";
-
-            var redisConfiguration = Environment.GetEnvironmentVariable("REDIS_CONFIGURATION");
-            if (!string.IsNullOrEmpty(redisConfiguration))
-            {
-                services.AddDataProtection()
-                    .PersistKeysToStackExchangeRedis(ConnectionMultiplexer.Connect(redisConfiguration),
-                        $"{audience}-DataProtection");
             }
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

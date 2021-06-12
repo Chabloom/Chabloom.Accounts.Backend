@@ -3,22 +3,20 @@ using System;
 using Chabloom.Accounts.Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace Chabloom.Accounts.Backend.Data.Migrations.AccountsDb
+namespace Chabloom.Accounts.Backend.Data.Migrations.Application
 {
-    [DbContext(typeof(AccountsDbContext))]
-    [Migration("20210522032908_AccountsDbMigration2")]
-    partial class AccountsDbMigration2
+    [DbContext(typeof(ApplicationDbContext))]
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.6")
+                .HasAnnotation("ProductVersion", "5.0.7")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
             modelBuilder.Entity("Chabloom.Accounts.Backend.Data.ApplicationRole", b =>
@@ -45,7 +43,7 @@ namespace Chabloom.Accounts.Backend.Data.Migrations.AccountsDb
                         .IsUnique()
                         .HasDatabaseName("RoleNameIndex");
 
-                    b.ToTable("AspNetRoles");
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("Chabloom.Accounts.Backend.Data.ApplicationUser", b =>
@@ -110,7 +108,7 @@ namespace Chabloom.Accounts.Backend.Data.Migrations.AccountsDb
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("AspNetUsers");
+                    b.ToTable("Users");
 
                     b.HasData(
                         new
@@ -152,7 +150,7 @@ namespace Chabloom.Accounts.Backend.Data.Migrations.AccountsDb
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetRoleClaims");
+                    b.ToTable("RoleClaims");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
@@ -175,7 +173,7 @@ namespace Chabloom.Accounts.Backend.Data.Migrations.AccountsDb
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserClaims");
+                    b.ToTable("UserClaims");
 
                     b.HasData(
                         new
@@ -183,13 +181,6 @@ namespace Chabloom.Accounts.Backend.Data.Migrations.AccountsDb
                             Id = 1,
                             ClaimType = "name",
                             ClaimValue = "Matthew Casey",
-                            UserId = new Guid("421bde72-5f81-451b-83b6-08d8d3b98c06")
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ClaimType = "role",
-                            ClaimValue = "Chabloom.Global.Admin",
                             UserId = new Guid("421bde72-5f81-451b-83b6-08d8d3b98c06")
                         });
                 });
@@ -212,7 +203,7 @@ namespace Chabloom.Accounts.Backend.Data.Migrations.AccountsDb
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserLogins");
+                    b.ToTable("UserLogins");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
@@ -227,7 +218,7 @@ namespace Chabloom.Accounts.Backend.Data.Migrations.AccountsDb
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetUserRoles");
+                    b.ToTable("UserRoles");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
@@ -246,7 +237,7 @@ namespace Chabloom.Accounts.Backend.Data.Migrations.AccountsDb
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("AspNetUserTokens");
+                    b.ToTable("UserTokens");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>

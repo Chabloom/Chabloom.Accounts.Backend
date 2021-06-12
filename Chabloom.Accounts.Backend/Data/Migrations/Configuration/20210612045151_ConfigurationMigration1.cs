@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace Chabloom.Accounts.Backend.Data.Migrations.ConfigurationDb
+namespace Chabloom.Accounts.Backend.Data.Migrations.Configuration
 {
-    public partial class ConfigurationDbMigration1 : Migration
+    public partial class ConfigurationMigration1 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
