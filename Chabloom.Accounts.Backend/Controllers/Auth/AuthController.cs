@@ -51,7 +51,7 @@ namespace Chabloom.Accounts.Backend.Controllers.Auth
         }
 
         [HttpPost("SignIn")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
@@ -88,7 +88,7 @@ namespace Chabloom.Accounts.Backend.Controllers.Auth
 
             _logger.LogInformation($"User {user.Id} sign in success");
 
-            return Ok();
+            return NoContent();
         }
 
         [HttpPost("SignOut/{id}")]
@@ -116,7 +116,7 @@ namespace Chabloom.Accounts.Backend.Controllers.Auth
         }
 
         [HttpPost("Register")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         public async Task<IActionResult> AccountRegisterAsync([FromBody] RegisterViewModel viewModel)
         {
@@ -160,7 +160,7 @@ namespace Chabloom.Accounts.Backend.Controllers.Auth
 
             _logger.LogInformation($"User {user.Id} registration success");
 
-            return Ok();
+            return NoContent();
         }
 
         [HttpGet("Error/{id}")]
