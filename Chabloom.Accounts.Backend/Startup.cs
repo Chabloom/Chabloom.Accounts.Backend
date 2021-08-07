@@ -47,7 +47,7 @@ namespace Chabloom.Accounts.Backend
                 services
                     .AddDataProtection()
                     .ProtectKeysWithAzureKeyVault(
-                        new Uri("https://chb-dev-1.vault.azure.net/keys/key-accounts/87bc811dd86b4cdda601650c512e603a"),
+                        new Uri($"{vaultAddress}/keys/key-accounts/87bc811dd86b4cdda601650c512e603a"),
                         new DefaultAzureCredential())
                     .PersistKeysToDbContext<ApplicationDbContext>();
             }
